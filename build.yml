@@ -11,6 +11,9 @@ jobs:
       trigger: true
   - task: build
     config:
+      inputs:
+      - {name: ybd}
+      - {name: definitions, path: .}     
       platform: linux
       image: docker:///ubuntu
       run:
