@@ -1,0 +1,30 @@
+jobs:
+- name: build
+  public: true
+  plan:
+  - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: false
+    - get: definitions
+      resource: definitions
+      trigger: true
+  - task: build
+    config:
+      platform: linux
+      image: docker:///ubuntu
+      run:
+        path: ybd/ybd.py
+        args: [systems/build-system-x86_64.morph, x86_64]
+
+resources:
+- name: ybd
+  type: git
+  source:
+    uri: https://github.com/devcurmudgeon/ybd.git
+    branch: master
+- name: definitions
+  type: git
+  source:
+    uri: git://git.baserock.org/baserock/baserock/definitions.git
+    branch: master
