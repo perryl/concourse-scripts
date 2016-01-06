@@ -22,7 +22,7 @@ jobs:
       platform: linux
       image: docker:///perryl/perryl-concourse#latest
       run:
-          path: ./scripts/ybd-build.sh
+        path: ./scripts/ybd-build.sh
         args: []
 #        path: ./ybd/ybd.py
 #        args: [systems/build-system-x86_64.morph, x86_64]
