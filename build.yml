@@ -1,4 +1,5 @@
 jobs:
+
 - name: build
   public: true
   plan:
@@ -9,16 +10,22 @@ jobs:
     - get: definitions
       resource: definitions
       trigger: true
+    - get: scripts
+      resource: scripts
+      trigger: false
   - task: build
     config:
       inputs:
       - {name: ybd}
-      - {name: definitions, path: .}     
+      - {name: definitions}     
+      - {name: scripts}     
       platform: linux
-      image: docker:///ubuntu
+      image: docker:///perryl/perryl-concourse#latest
       run:
-        path: ybd/ybd.py
-        args: [systems/build-system-x86_64.morph, x86_64]
+          path: ./scripts/ybd-build.sh
+        args: []
+#        path: ./ybd/ybd.py
+#        args: [systems/build-system-x86_64.morph, x86_64]
 
 resources:
 - name: ybd
@@ -30,4 +37,9 @@ resources:
   type: git
   source:
     uri: git://git.baserock.org/baserock/baserock/definitions.git
+    branch: master
+- name: scripts
+  type: git
+  source:
+    uri: https://github.com/perryl/concourse-scripts.git
     branch: master
