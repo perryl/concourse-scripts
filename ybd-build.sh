@@ -1,4 +1,4 @@
 #!/bin/sh
 
 mkdir /src
-python ybd/ybd.py definitions/system/build-essential x86_64
+./ybd/ybd.py definitions/system/build-system-x86_64.morph x86_64
