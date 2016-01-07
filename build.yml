@@ -40,4 +40,4 @@ resources:
   type: git
   source:
     uri: https://github.com/perryl/concourse-scripts.git
-    branch: master
+    branch: ybdtest
