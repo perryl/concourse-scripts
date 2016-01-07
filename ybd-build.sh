@@ -3,6 +3,7 @@
 DIR=$PWD
 pwd
 cd /
+ls
 sudo mkdir -p src
 pwd
 cd $DIR
