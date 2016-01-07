@@ -14,6 +14,7 @@ jobs:
       resource: scripts
       trigger: false
   - task: build
+    privileged: true
     config:
       inputs:
       - {name: ybd}
