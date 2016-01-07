@@ -2,4 +2,5 @@
 
 sudo mkdir -p /src
 
-sudo ./ybd/ybd.py stage1-binutils x86_64
+sudo ./ybd/ybd.py build-essential x86_64
+sudo ./ybd/ybd.py base-system x86_64
