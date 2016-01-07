@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIR=pwd
+DIR=$PWD
 cd /
 sudo mkdir -p src
 cd $DIR
