@@ -1,6 +1,7 @@
 #!/bin/sh
 
 DIR=$PWD
+chown root /
 cd /
 ls -ld /
 sudo mkdir -p src
