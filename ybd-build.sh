@@ -1,5 +1,6 @@
 #!/bin/sh
 
+sudo ./install-dependency.sh
 sudo mkdir -p /src
 
 sudo ./ybd/ybd.py build-essential x86_64

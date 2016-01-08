@@ -21,7 +21,7 @@ jobs:
       - {name: definitions}     
       - {name: scripts}     
       platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      image: docker:///palvarez89/baserock-15.34-fake#latest
       run:
         path: ./scripts/ybd-build.sh
         args: []
