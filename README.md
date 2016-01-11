@@ -33,6 +33,15 @@ This pipeline is currently very basic; it simply attempts to build
 [perryl/perryl-concourse](https://hub.docker.com/r/perryl/perryl-concourse/) docker image) build-essential and the Baserock
 base-system from [definitions](http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/).
 
+As of now the main concern is getting more visibility of what the build does at
+each stage. To do this, the pipeline will be modified into at least two tasks,
+one to parse the system in definitions, which will then output a separate YAML
+file containing build instructions for each system inside the system.
+
+That is, instead of a single task building the system as a whole, there will
+be one task parsing the system, and then separate consecutive tasks building
+each item in the system individually.
+
 The eventual aim of this is to be able to build all systems in Baserock
 definitions with ease and once completed, run tests on the resulting artifacts.
 I will be looking at artifact reproducibility in particular; output successful
