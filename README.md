@@ -1,16 +1,20 @@
 # Reproducible Builds with YBD Using the Concourse Pipeline
 
-This repo should contain all the required information to set up a [concourse](http://concourse.ci/)
-pipeline that uses [YBD](https://github.com/devcurmudgeon/ybd.git) to build [Baserock](http://wiki.baserock.org/) systems.
+This repo should contain all the required information to set up a
+[concourse](http://concourse.ci/) pipeline that uses
+[YBD](https://github.com/devcurmudgeon/ybd.git) to build
+[Baserock](http://wiki.baserock.org/) systems.
 
 ## Setup
 
-- Clone the [concourse-scripts](https://github.com/perryl/concourse-scripts.git) repo
+- Clone the
+[concourse-scripts](https://github.com/perryl/concourse-scripts.git) repo
 
 - (OPTIONAL) Build your own Docker image
-  - This requires you have a [Docker hub](http://hub.docker.com/) login and docker installed on your
-    system
-  - Follow the instructions [here](http://doc.docker.com/linux/step_four) and [here](http://doc.docker.com/linux/step_six)
+  - This requires you have a [Docker hub](http://hub.docker.com/) login and
+docker installed on your system
+  - Follow the instructions [here](http://doc.docker.com/linux/step_four) and
+[here](http://doc.docker.com/linux/step_six)
   - Replace the perryl/perryl-concourse docker image in build.yml with your own
     docker hub image
 
@@ -24,14 +28,17 @@ pipeline that uses [YBD](https://github.com/devcurmudgeon/ybd.git) to build [Bas
     fly unpause-pipeline -p ybd-build
 ```
 
-- Navigate [here](http://192.168.100.4:8080/pipelines/ybd-build) and see your pipeline in action!
+- Navigate [here](http://192.168.100.4:8080/pipelines/ybd-build) and see your
+pipeline in action!
 
 ## Further features
 
 This pipeline is currently very basic; it simply attempts to build
 (successfully as of January 11th 2016, using the 
-[perryl/perryl-concourse](https://hub.docker.com/r/perryl/perryl-concourse/) docker image) build-essential and the Baserock
-base-system from [definitions](http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/).
+[perryl/perryl-concourse](https://hub.docker.com/r/perryl/perryl-concourse/)
+docker image) build-essential and the `base-system-x86_64-generic` Baserock
+system from 
+[definitions](http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/).
 
 As of now the main concern is getting more visibility of what the build does at
 each stage. To do this, the pipeline will be modified into at least two tasks,
