@@ -29,7 +29,7 @@ pipeline that uses [YBD](https://github.com/devcurmudgeon/ybd.git) to build [Bas
 ## Further features
 
 This pipeline is currently very basic; it simply attempts to build
-(unsuccessfully as of January 8th 2016, using the 
+(successfully as of January 11th 2016, using the 
 [perryl/perryl-concourse](https://hub.docker.com/r/perryl/perryl-concourse/) docker image) build-essential and the Baserock
 base-system from [definitions](http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/).
 
