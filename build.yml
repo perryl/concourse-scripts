@@ -1,22 +1,5 @@
 jobs:
 
-- name: install
-  public: true
-  plan:
-  - aggregate:
-    - get: scripts
-      resource: scripts
-      trigger: false
-  - task: install
-    privileged: true
-    config:
-      inputs:
-      - {name: scripts}
-      platform: linux
-      image: docker:///palvarez89/baserock-15.34-fake#latest
-      run:
-        path: ./scripts/install-dependency.sh
-        args: []
 - name: build
   public: true
   plan:
