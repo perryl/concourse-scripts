@@ -35,7 +35,7 @@ def open_file(morphology):
         except:
             #TODO: proper error class
             #raise YamlLoadError(file_name)
-            print "lolno"
+            print "File is incorrectly formatted"
             exit()
         if yaml_stream['kind'] == 'system':
             # Progress to parsing strata
