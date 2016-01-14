@@ -87,7 +87,7 @@ def get_chunks(strata_file):
 
 def get_dependencies(strata_file):
     # Want to parse build-depends
-    for item in strata_file['build-depends']
+    for item in strata_file['build-depends']:
         if item['name'] in strata_list:
             pass
         else:
