@@ -27,6 +27,8 @@ import re
 from collections import OrderedDict
 
 
+strata_list = []
+
 def open_file(morphology):
     '''Takes a file, ensure it is a system file and then open it'''
     with open(morphology, 'r') as f:
@@ -42,6 +44,7 @@ def open_file(morphology):
             get_strata(yaml_stream)
         elif yaml_stream['kind'] == 'stratum':
             # Stratum parsed; parse chunks
+            get_dependencies(yaml_stream)
             get_chunks(yaml_stream)
         else:
             pass
@@ -50,6 +53,7 @@ def get_strata(system_file):
     ''' Iterates through a yaml stream and finds all the strata'''
     # Iterate through the strata section of the system file
     for item in system_file['strata']:
+        strata_list.append(item['name'])
         morph_path = '/home/lauren/Baserock/definitions/%s' % item['morph']
         open_file(morph_path)
 
@@ -80,6 +84,18 @@ def get_chunks(strata_file):
         else:
             chunk_collection['branch'] = 'master'
         generate_resources(chunk_collection)
+
+def get_dependencies(strata_file):
+    # Want to parse build-depends
+    for item in strata_file['build-depends']
+        if item['name'] in strata_list:
+            pass
+        else:
+            strata_list.append(item['name'])
+            morph_path = '/home/lauren/Baserock/definitions/%s' % item['morph']
+            open_file(morph_path)
+
+        get_chunks(item)
 
 # Could implement a Class for the above fns, then call this in the Class main()
 system_file = open_file('/home/lauren/Baserock/definitions/systems/base-system-x86_64-generic.morph')
