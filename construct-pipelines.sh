@@ -19,6 +19,6 @@ system_name=$(basename "$build_system" ".morph")
 
 CWD=$PWD
 cd $CWD/$system_name/
-for file in '*.yml'; do
+for file in *.yml; do
     yes | fly set-pipeline -p $file -c $file
 done
