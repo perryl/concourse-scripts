@@ -1,0 +1,17 @@
+resources:
+- name: ybd
+  type: git
+  source:
+    uri: http://github.com/locallycompact/ybd
+    branch: master
+
+jobs:
+- name: how2setupybd
+  public: true
+  plan:
+  - get: ybd
+  - task: setupybd
+    file: ybd/ci/setup.yml
+    config:
+      params:
+        YBD_CACHE_SERVER: {{ybd-cache-server}}
