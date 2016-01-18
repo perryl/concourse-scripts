@@ -69,20 +69,6 @@ individual pipelines on concourse, run the following command:
   - This will just output the individual stratum pipelines to a directory with
     the same name as the system morphology.
 
-## To-do items
-
-As of 2016/01/18:
-
-- Get all pipelines running and building
-- Argument parsing for `construct-pipelines.sh` instead of hardcoded definition
-  system paths
-- Pass arg to `parser.py` in `construct-pipelines.sh`
-- Change name of `ymlfiles/` to name of system
-- Create system pipeline YAML to run once all strata builds passed successfully
-- System pipeline that runs all strata pipelines then builds system rather than
-  individually building them with shell script
-- `yaml.dump()` rather than `file.write()`
-
 ## Further features
 
 This pipeline is currently very basic; it simply attempts to build
