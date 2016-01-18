@@ -1,10 +1,20 @@
 #!/bin/sh
 
+set -e
+
 # This file, when ran, calls the parser python script to generate concourse
 # pipelines; one for each stratum in the system specified in parser.py. The
 # script will then set up each pipeline separately.
 
-./parser.py
+if [ "$#" != "1" ]
+then
+    echo "Invalid # arguments"
+    echo "Usage: ./construct-pipelines.sh definitions/systems/build-system-x86_64.morph"
+    exit 1
+fi
+
+build_system="$1"
+./parser.py --system=$build_system
 
 CWD=$PWD
 cd $CWD/ymlfiles/
