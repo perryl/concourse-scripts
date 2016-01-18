@@ -121,11 +121,12 @@ class SystemsParser():
                     f.write("      run:\n        path: ./ybd/ybd.py\n")
                     f.write("        args: [definitions/strata/%s.morph]\n\n" % (
                             strata['name']))
-                    f.write("resources:\n")
+                    f.write("resources:\n\n")
                     f.write("- name: ybd\n  type: git\n  source:\n    uri: " \
-                            "https://github.com/devcurmudgeon/ybd.git")
+                            "https://github.com/devcurmudgeon/ybd.git\n\n")
                     f.write("- name: definitions\n  type: git\n  source:\n" \
-                            "uri: git://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git")
+                            "    uri: git://git.baserock.org/cgi-bin/" \
+                            "cgit.cgi/baserock/baserock/definitions.git\n\n")
                     for chunk in value:
                         f.write("- name: %s\n  type: git\n  source:\n    uri: %s" \
                                 "\n    branch: %s\n\n" % (
