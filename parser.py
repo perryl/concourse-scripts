@@ -1,8 +1,8 @@
 #!/usr/bin/python
 #
 # parser.py
-# Takes in a given morph system and parses the stratum required. Then parses the
-# stratum and determines all the associated chunks
+# Takes in a given morph system and parses the stratum required. Then parses
+# the stratum and determines all the associated chunks
 # Ultimate goal: output the chunks as YAML resource files for Concourse
 # Copyright (c) Codethink 2016 All Rights Reserved
 
@@ -14,11 +14,6 @@
 # 5) parse strata and determine chunks
 # For now, let's make this a fairly straightforward functional code and worry
 # about making it class based later
-
-# GOALS
-# Morning 1: Parse basic system and get a list of all chunks saved to dict
-#            Chunks should be associated explicitly with the relevant strata
-#            Order of strata build should be determined
 
 
 import yaml
@@ -54,18 +49,54 @@ def get_strata(system_file):
         open_file(morph_path)
 
 def set_url(upstream, repo):
-    url = 'http://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (upstream, repo)
+    url = 'http://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (
+          upstream, repo)
     return url
 
-def generate_resources(chunk):
-    file_out = 'ymlfiles/%s.yml' % chunk['name']
+def generate_resources(strata, chunks):
+    file_out = 'ymlfiles/jobs-%s.yml' % strata['name']
+    with open(file_out, 'a') as f:
+        for key, value in chunks.iteritems():
+            f.write("- name: %s\n  type: git\n  source:\n    uri: %s\n" \
+                    "    branch: %s\n\n" % (
+                    value['name'], value['repo'], value['branch']))
+
+def generate_jobs(strata, chunks):
+    file_out = 'ymlfiles/jobs-%s.yml' % strata['name']
+    previous_item = None
     with open(file_out, 'w') as f:
-        f.write("resources:\n- name: %s\n  type: git\n  source:\n    uri: %s" \
-                "\n    branch: %s" % (
-                chunk['name'], chunk['repo'], chunk['branch']))
+        f.write("jobs:\n\n")
+        for key, value in strata.iteritems():
+            if key == 'chunks':
+                f.write("- name: %s\n  public: true\n" % strata['name'])
+                f.write("  plan:\n  - aggregate:\n")
+                for chunk in value:
+                    f.write("    - get: %s\n      resource: %s\n" % (
+                            chunk['name'], chunk['name']))
+                    f.write("      trigger: true\n")
+                if previous_item is not None:
+                    f.write("    passed: %s" % previous_item)
+                previous_item = strata['name']
+                f.write("    privileged: true\n    config:\n      inputs:\n")
+                for chunk in value:
+                    f.write("      - {name: %s}\n" % chunk['name'])
+                f.write("      platform: linux\n      ")
+                f.write("image: docker:///perryl/perryl-concourse#latest\n")
+                f.write("      run:\n        path: ./ybd/ybd.py\n")
+                f.write("        args: [definitions/strata/%s.morph]\n\n" % (
+                        strata['name']))
+                f.write("resources:\n")
+                for chunk in value:
+                    f.write("- name: %s\n  type: git\n  source:\n    uri: %s" \
+                            "\n    branch: %s\n\n" % (
+                            chunk['name'], chunk['repo'],
+                            chunk['unpetrify-ref']))
+            else:
+                pass
 
 def get_chunks(strata_file):
-    chunk_collection = {}
+    chunk_collection = []
+    chunk_data = {}
     for item in strata_file['chunks']:
         if 'baserock:' in item['repo']:
             repo = re.sub('baserock:', '', item['repo'])
@@ -73,13 +104,12 @@ def get_chunks(strata_file):
         else:
             repo = re.sub('upstream:', '', item['repo'])
             upstream = 'delta'
-        chunk_collection['name'] = item['name']
-        chunk_collection['repo'] = set_url(upstream, repo)
-        if 'unpetrify-ref' in item.keys():
-            chunk_collection['branch'] = item['unpetrify-ref']
-        else:
-            chunk_collection['branch'] = 'master'
-        generate_resources(chunk_collection)
+        chunk_data['name'] = item['name']
+        item['repo'] = set_url(upstream, repo)
+        if not 'unpetrify-ref' in item.keys():
+            item['unpetrify-ref'] = 'master'
+        chunk_collection.append(chunk_data)
+    generate_jobs(strata_file, chunk_collection)
 
 # Could implement a Class for the above fns, then call this in the Class main()
 system_file = open_file('/home/lauren/Baserock/definitions/systems/base-system-x86_64-generic.morph')
