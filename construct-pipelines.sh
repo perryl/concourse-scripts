@@ -9,5 +9,5 @@
 CWD=$PWD
 cd $CWD/ymlfiles/
 for file in '*.yml'; do
-    yes | fly set-pipeline -p $file -c $file
+    fly set-pipeline -p $file -c $file
 done
