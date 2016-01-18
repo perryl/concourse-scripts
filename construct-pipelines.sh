@@ -5,12 +5,9 @@
 # script will then set up each pipeline separately.
 
 ./parser.py
-#vagrant init concourse/lite
-#vagrant up
 
 CWD=$PWD
 cd $CWD/ymlfiles/
 for file in '*.yml'; do
-    fly set-pipeline -p $file -c $file
-    fly unpause-pipeline -p $file
+    yes | fly set-pipeline -p $file -c $file
 done
