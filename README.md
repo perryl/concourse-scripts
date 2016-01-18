@@ -64,7 +64,7 @@ http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/)
 - (OPTIONAL) If you just want to view the stratum YAML files without setting up
 individual pipelines on concourse, run the following command:
 ```
-    ./parser.py <path/to/definitions/systems/your-system.morph>
+    ./parser.py --system=<path/to/definitions/systems/your-system.morph>
 ```
   - This will just output the individual stratum pipelines to a directory with
     the same name as the system morphology.
