@@ -22,16 +22,33 @@ import re
 from collections import OrderedDict
 
 
+class Error(Exception):
+        pass
+
+
+class InvalidFormatError(Error):
+
+    def __init__(self, morph_file):
+        self.morph_file = morph_file
+        Error.__init__(self, 'Morphology is not a dict: %s' % self.morph_file)
+
+
+class YamlLoadError(Error):
+
+    def __init__(self, morph_file):
+        self.morph_file = morph_file
+        Error.__init__(self, 'Could not load file: %' % self.morph_file)
+
+
 def open_file(morphology):
     '''Takes a file, ensure it is a system file and then open it'''
     with open(morphology, 'r') as f:
         try:
             yaml_stream = yaml.safe_load(f)
         except:
-            #TODO: proper error class
-            #raise YamlLoadError(file_name)
-            print "File is incorrectly formatted"
-            exit()
+            raise YamlLoadError(file_name)
+        if not isinstance(yaml_stream, dict):
+            raise InvalidFormatError(file_name)
         if yaml_stream['kind'] == 'system':
             # Progress to parsing strata
             get_strata(yaml_stream)
