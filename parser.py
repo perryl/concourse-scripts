@@ -102,6 +102,9 @@ class SystemsParser():
                 if key == 'chunks':
                     f.write("- name: %s\n  public: true\n" % strata['name'])
                     f.write("  plan:\n  - aggregate:\n")
+                    f.write("    - get: ybd\n      resource: ybd\n")
+                    f.write("    - get: definitions\n")
+                    f.write("      resource: definitions\n")
                     for chunk in value:
                         f.write("    - get: %s\n      resource: %s\n" % (
                                 chunk['name'], chunk['name']))
@@ -118,6 +121,10 @@ class SystemsParser():
                     f.write("        args: [definitions/strata/%s.morph]\n\n" % (
                             strata['name']))
                     f.write("resources:\n")
+                    f.write("- name: ybd\n  type: git\n  source:\n    uri: " \
+                            "https://github.com/devcurmudgeon/ybd.git")
+                    f.write("- name: definitions\n  type: git\n  source:\n" \
+                            "uri: git://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git")
                     for chunk in value:
                         f.write("- name: %s\n  type: git\n  source:\n    uri: %s" \
                                 "\n    branch: %s\n\n" % (
