@@ -74,12 +74,14 @@ individual pipelines on concourse, run the following command:
 As of 2016/01/18:
 
 - Get all pipelines running and building
-- Argument parsing for construct-pipelines.sh instead of hardcoded definitions
+- Argument parsing for `construct-pipelines.sh` instead of hardcoded definition
   system paths
-- Pass arg to parser.py in construct-pipelines.sh
-- Change name of ymlfiles/ to name of system
+- Pass arg to `parser.py` in `construct-pipelines.sh`
+- Change name of `ymlfiles/` to name of system
 - Create system pipeline YAML to run once all strata builds passed successfully
-- yaml.dump() rather than file.write()
+- System pipeline that runs all strata pipelines then builds system rather than
+  individually building them with shell script
+- `yaml.dump()` rather than `file.write()`
 
 ## Further features
 
@@ -87,8 +89,8 @@ This pipeline is currently very basic; it simply attempts to build
 (successfully as of January 11th 2016, using the 
 [perryl/perryl-concourse](https://hub.docker.com/r/perryl/perryl-concourse/)
 docker image) build-essential and the `base-system-x86_64-generic` Baserock
-system from 
-[definitions](http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/).
+system from [definitions](
+http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/).
 
 As of now the main concern is getting more visibility of what the build does at
 each stage. To do this, the pipeline will be modified into at least two tasks,
