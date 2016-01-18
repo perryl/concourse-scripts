@@ -31,6 +31,44 @@ docker installed on your system
 - Navigate [here](http://192.168.100.4:8080/pipelines/ybd-build) and see your
 pipeline in action!
 
+## Beginnings of automation
+
+Work is currently being done to find a way to best automate the process of
+pipeline creation. In essence, the aim is the following:
+
+`input baserock system -> run script/parser -> generate pipeline per stratum 
+ -> set up all stratum pipelines on concourse -> build strata via concourse
+ -> build system via concourse ( -> run reproducibility tests on system)`
+
+This can easily be tested by performing the following steps:
+
+- Clone this repo
+
+- Clone Baserock [definitions](
+http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/)
+
+- Install vagrant on your system and set up with the following:
+```
+    vagrant init concourse/lite
+    vagrant up
+```
+
+- Run the following command:
+```
+    ./construct-pipelines.sh <path/to/definitions/systems/your-system.morph>
+```
+  - This will run the parser python script over the given system, outputting a
+    separate build YAML for each strata, then setting up a pipeline using each
+    YAML file in your concourse system.
+
+- (OPTIONAL) If you just want to view the stratum YAML files without setting up
+individual pipelines on concourse, run the following command:
+```
+    ./parser.py <path/to/definitions/systems/your-system.morph>
+```
+  - This will just output the individual stratum pipelines to a directory with
+    the same name as the system morphology.
+
 ## Further features
 
 This pipeline is currently very basic; it simply attempts to build
