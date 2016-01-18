@@ -54,19 +54,20 @@ class SystemsParser():
                 raise InvalidFormatError(file_name)
             if yaml_stream['kind'] == 'system':
                 # Progress to parsing strata
-                self.get_strata(yaml_stream, system_name)
+                self.get_strata(yaml_stream, morphology)
             elif yaml_stream['kind'] == 'stratum':
                 # Stratum parsed; parse chunks
                 self.get_chunks(yaml_stream, system_name)
             else:
                 pass
 
-    def get_strata(self, system_file, system_name):
+    def get_strata(self, system_file, morphology):
         ''' Iterates through a yaml stream and finds all the strata'''
         # Iterate through the strata section of the system file
+        morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         for item in system_file['strata']:
-            morph_path = '/home/lauren/Baserock/definitions/%s' % item['morph']
-            self.open_file(morph_path, system_name)
+            morph_path = '%s/%s' % (morph_dir, item['morph'])
+            self.open_file(morph_path, system_file['name'])
 
     def set_url(self, upstream, repo):
         url = 'http://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (
