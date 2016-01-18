@@ -14,10 +14,11 @@ then
 fi
 
 build_system="$1"
-./parser.py --system=$build_system
+system_name=$(basename "$build_system" ".morph")
+./parser.py --system="$build_system"
 
 CWD=$PWD
-cd $CWD/ymlfiles/
+cd $CWD/$system_name/
 for file in '*.yml'; do
     yes | fly set-pipeline -p $file -c $file
 done
