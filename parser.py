@@ -23,7 +23,7 @@ from collections import OrderedDict
 
 
 class Error(Exception):
-        pass
+    pass
 
 
 class InvalidFormatError(Error):
