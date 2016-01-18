@@ -79,6 +79,9 @@ def generate_resources(strata, chunks):
                     value['name'], value['repo'], value['branch']))
 
 def generate_jobs(strata, chunks):
+    path = '%s/ymlfiles/' % os.getcwd()
+    if not os.path.isdir(path):
+        os.mkdir(path)
     file_out = 'ymlfiles/jobs-%s.yml' % strata['name']
     previous_item = None
     with open(file_out, 'w') as f:
