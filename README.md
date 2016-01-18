@@ -55,7 +55,7 @@ http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/)
 
 - Run the following command:
 ```
-    ./construct-pipelines.sh <path/to/definitions/systems/your-system.morph>
+    ./construct-pipelines.sh
 ```
   - This will run the parser python script over the given system, outputting a
     separate build YAML for each strata, then setting up a pipeline using each
@@ -64,10 +64,10 @@ http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/)
 - (OPTIONAL) If you just want to view the stratum YAML files without setting up
 individual pipelines on concourse, run the following command:
 ```
-    ./parser.py <path/to/definitions/systems/your-system.morph>
+    ./parser.py
 ```
-  - This will just output the individual stratum pipelines to a directory with
-    the same name as the system morphology.
+  - This will just output the individual stratum pipelines to the `ymlfiles/`
+    directory
 
 ## Further features
 
