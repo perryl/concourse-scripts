@@ -70,7 +70,7 @@ class SystemsParser():
             self.open_file(morph_path, system_file['name'])
 
     def set_url(self, upstream, repo):
-        url = 'http://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (
+        url = 'git://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (
               upstream, repo)
         return url
 
