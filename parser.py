@@ -52,22 +52,16 @@ class SystemsParser():
                 raise YamlLoadError(file_name)
             if not isinstance(yaml_stream, dict):
                 raise InvalidFormatError(file_name)
-            if yaml_stream['kind'] == 'system':
-                # Progress to parsing strata
-                self.get_strata(yaml_stream, morphology)
-            elif yaml_stream['kind'] == 'stratum':
-                # Stratum parsed; parse chunks
-                self.get_chunks(yaml_stream, system_name)
-            else:
-                pass
+        return yaml_stream
 
     def get_strata(self, system_file, morphology):
         ''' Iterates through a yaml stream and finds all the strata'''
         # Iterate through the strata section of the system file
+        morph_path = []
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         for item in system_file['strata']:
-            morph_path = '%s/%s' % (morph_dir, item['morph'])
-            self.open_file(morph_path, system_file['name'])
+            morph_path.append('%s/%s' % (morph_dir, item['morph']))
+        return morph_path
 
     def set_url(self, upstream, repo):
         url = 'git://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (
@@ -85,11 +79,11 @@ class SystemsParser():
                 repo = re.sub('upstream:', '', item['repo'])
                 upstream = 'delta'
             chunk_data['name'] = item['name']
-            item['repo'] = self.set_url(upstream, repo)
+            chunk_data['repo'] = self.set_url(upstream, repo)
             if not 'unpetrify-ref' in item.keys():
-                item['unpetrify-ref'] = 'master'
+                chunk_data['unpetrify-ref'] = 'master'
             chunk_collection.append(chunk_data)
-        self.generate_jobs(strata_file, chunk_collection, system_name)
+        return chunk_collection
 
     def generate_jobs(self, strata, chunks, system_name):
         path = '%s/%s' % (os.getcwd(), system_name)
@@ -134,14 +128,48 @@ class SystemsParser():
                                 chunk['unpetrify-ref']))
                 else:
                     pass
+        return file_out
+
+    def concatenate_files(self, pipelines, system_name):
+        system = {}
+        jobs = []
+        resources = []
+        path = '%s/%s' % (os.getcwd(), system_name)
+        file_out = '%s/%s.yml' % (path, system_name)
+        with open(file_out, 'w') as f:
+            for item in pipelines:
+                stratum = self.open_file(item, system_name)
+                jobs.append(stratum['jobs'])
+                resources.append(stratum['jobs'])
+            system['jobs'] = jobs
+            system['resources'] = resources
+            f.write(yaml.dump(system, default_flow_style=False))
 
     def main(self):
+        chunk_list = []
+        strata_pipelines = []
         parser = argparse.ArgumentParser(
                  description='Takes Baserock system morphology.')
         parser.add_argument('--system', type=str)
         args = parser.parse_args()
         system_name = os.path.splitext(os.path.basename(args.system))[0]
-        self.open_file(args.system, system_name)
+        stream = self.open_file(args.system, system_name)
+        if stream['kind'] == 'system':
+            # Progress to parsing strata
+            strata_list = self.get_strata(stream, args.system)
+            for item in strata_list:
+                strata_stream = self.open_file(item, system_name)
+                chunk_list.append(self.get_chunks(strata_stream, system_name))
+                strata_pipelines.append(self.generate_jobs(
+                    strata_stream, chunk_list, system_name))
+            self.concatenate_files(strata_pipelines, system_name)
+        if stream['kind'] == 'stratum':
+            # Stratum parsed; parse chunks
+            chunk_list.append(self.get_chunks(stream, system_name))
+            strata_pipelines.append(self.generate_jobs(
+                strata_stream, chunk_list, system_name))
+        else:
+            pass
 
 if __name__ == "__main__":
     SystemsParser().main()
