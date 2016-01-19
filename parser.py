@@ -92,48 +92,64 @@ class SystemsParser():
         self.generate_jobs(strata_file, chunk_collection, system_name)
 
     def generate_jobs(self, strata, chunks, system_name):
+        jobs = {}
+        plan = {}
+        config = {}
+        run = {}
+        aggregate = {}
+        input = {}
+        source = {}
         path = '%s/%s' % (os.getcwd(), system_name)
         if not os.path.isdir(path):
             os.mkdir(path)
-        file_out = '%s/%s.yml' % (path, strata['name'])
-        previous_item = None
+        file_out = '%s/%s-test.yml' % (path, system_name)
+        if not 'build-depends' in strata.keys():
+            passed = ''
+        else:
+            passed = strata['build-depends']
         with open(file_out, 'w') as f:
-            f.write("jobs:\n\n")
             for key, value in strata.iteritems():
                 if key == 'chunks':
-                    f.write("- name: %s\n  public: true\n" % strata['name'])
-                    f.write("  plan:\n  - aggregate:\n")
-                    f.write("    - get: ybd\n      resource: ybd\n")
-                    f.write("    - get: definitions\n")
-                    f.write("      resource: definitions\n")
+                    jobs['name'] = strata['name']
+                    jobs['public'] = 'True'
+                    jobs['trigger'] = 'True'
+                    jobs['passed'] = '[%s]' % passed
+                    jobs['plan'] = plan
                     for chunk in value:
-                        f.write("    - get: %s\n      resource: %s\n" % (
-                                chunk['name'], chunk['name']))
-                        f.write("      trigger: true\n")
-                    if previous_item is not None:
-                        f.write("    passed: %s" % previous_item)
-                    previous_item = strata['name']
-                    f.write("    privileged: true\n    config:\n      inputs:\n")
+                        aggregate['get'] = chunk['name']
+                        aggregate['resource'] = chunk['name']
+                        aggregate['trigger'] = 'True'
+                        aggregate['passed'] = '[%s]' % passed
+                        plan['aggregate'] = aggregate
+                    plan['task'] = strata['name']
+                    plan['privileged'] = 'True'
+                    plan['config'] = config
                     for chunk in value:
-                        f.write("      - {name: %s}\n" % chunk['name'])
-                    f.write("      platform: linux\n      ")
-                    f.write("image: docker:///perryl/perryl-concourse#latest\n")
-                    f.write("      run:\n        path: ./ybd/ybd.py\n")
-                    f.write("        args: [definitions/strata/%s.morph]\n\n" % (
-                            strata['name']))
-                    f.write("resources:\n\n")
-                    f.write("- name: ybd\n  type: git\n  source:\n    uri: " \
-                            "https://github.com/devcurmudgeon/ybd.git\n\n")
-                    f.write("- name: definitions\n  type: git\n  source:\n" \
-                            "    uri: git://git.baserock.org/cgi-bin/" \
-                            "cgit.cgi/baserock/baserock/definitions.git\n\n")
-                    for chunk in value:
-                        f.write("- name: %s\n  type: git\n  source:\n    uri: %s" \
-                                "\n    branch: %s\n\n" % (
-                                chunk['name'], chunk['repo'],
-                                chunk['unpetrify-ref']))
+                        input['name'] = chunk['name']
+                        config['input'] = input
+                    config['platform'] = 'linux'
+                    config['image'] = 'docker:///perryl/perryl-concourse#latest'
+                    run['args'] = '[ definitions/strata/%s.morph ]' % strata['name']
+                    run['path'] = './ybd/ybd.py'
+                    config['run'] = run
                 else:
                     pass
+                f.write(yaml.dump(jobs, default_flow_style=False))
+
+    def generate_resources(self):
+        resources = {}
+
+        for chunk in value:
+            resources['name'] = chunk['name']
+            resources['type'] = 'git'
+            source['uri'] = chunk['repo']
+            source['branch'] = chunk['unpetrify-ref']
+            resources['source'] = source
+        '''for chunk in value:
+            f.write("- name: %s\n  type: git\n  source:\n    uri: %s" \
+                    "\n    branch: %s\n\n" % (
+                    chunk['name'], chunk['repo'],
+                    chunk['unpetrify-ref']))'''
 
     def main(self):
         parser = argparse.ArgumentParser(
