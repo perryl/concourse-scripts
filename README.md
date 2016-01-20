@@ -15,77 +15,63 @@ This repo should contain all the required information to set up a
 docker installed on your system
   - Follow the instructions [here](http://doc.docker.com/linux/step_four) and
 [here](http://doc.docker.com/linux/step_six)
-  - Replace the perryl/perryl-concourse docker image in build.yml with your own
+  - Replace the perryl/perryl-concourse docker image in parser.py with your own
     docker hub image
 
-- Install vagrant on your system
+- Install vagrant on your system, or ensure it is up-to-date
+
+- Clone Baserock [definitions](
+http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/)
+or, if you have cloned definitions already, ensure it is up-to-date.
+
+## Pipeline automation
+
+Originally, we had a pipeline that would clone YBD, definitions and
+concourse-scripts, then run a shell script containing instructions to run
+YBD over the build-essential stratum and base-system-x86_64-generic system.
+
+However, this didn't give us a good output of what was happening at each stage.
+If base-system was built inside a single job and failed for some reason, we
+wouldn't be able to tell where or why the failure occurred. Instead, what we
+needed was a way to visualise the whole system build. In essence, we wanted the
+following:
+
+`input baserock system -> run script/parser -> generate pipeline per stratum 
+ -> set up all stratum pipelines on concourse -> set resources for each strata
+job as chunks -> build strata via concourse -> build system via concourse ( ->
+ run reproducibility tests on system)`
+
+Although we do not yet have testing functionality, the full pipeline for a
+system can now be shown using the following commands (assuming the instructions
+from 'Setup' in this document have been followed):
 
 - Run the following from the concourse-scripts repo directory:
 ```
     vagrant init concourse/lite
     vagrant up
-    fly set-pipeline -p ybd-build -c build.yml
-    fly unpause-pipeline -p ybd-build
-```
-
-- Navigate [here](http://192.168.100.4:8080/pipelines/ybd-build) and see your
-pipeline in action!
-
-## Beginnings of automation
-
-Work is currently being done to find a way to best automate the process of
-pipeline creation. In essence, the aim is the following:
-
-`input baserock system -> run script/parser -> generate pipeline per stratum 
- -> set up all stratum pipelines on concourse -> build strata via concourse
- -> build system via concourse ( -> run reproducibility tests on system)`
-
-This can easily be tested by performing the following steps:
-
-- Clone this repo
-
-- Clone Baserock [definitions](
-http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/)
-
-- Install vagrant on your system and set up with the following:
-```
-    vagrant init concourse/lite
-    vagrant up
-```
-
-- Run the following command:
-```
     ./construct-pipelines.sh <path/to/definitions/systems/your-system.morph>
 ```
   - This will run the parser python script over the given system, outputting a
-    separate build YAML for each strata, then setting up a pipeline using each
-    YAML file in your concourse system.
+    build YAML containing jobs and resources defined by the strata in the
+    system, and finally setting up a pipeline using each YAML file in your concourse system.
 
-- (OPTIONAL) If you just want to view the stratum YAML files without setting up
-individual pipelines on concourse, run the following command:
+- (OPTIONAL) If you just want to view the system YAML file without setting up
+the pipeline on concourse, run the following command:
 ```
     ./parser.py --system=<path/to/definitions/systems/your-system.morph>
 ```
-  - This will just output the individual stratum pipelines to a directory with
-    the same name as the system morphology.
+
+- Congratulations! Your pipeline should now be visible [here](
+http://192.168.100.4:8080)
 
 ## Further features
 
-This pipeline is currently very basic; it simply attempts to build
-(successfully as of January 11th 2016, using the 
-[perryl/perryl-concourse](https://hub.docker.com/r/perryl/perryl-concourse/)
-docker image) build-essential and the `base-system-x86_64-generic` Baserock
-system from [definitions](
-http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/definitions.git/).
-
-As of now the main concern is getting more visibility of what the build does at
-each stage. To do this, the pipeline will be modified into at least two tasks,
-one to parse the system in definitions, which will then output a separate YAML
-file containing build instructions for each system inside the system.
-
-That is, instead of a single task building the system as a whole, there will
-be one task parsing the system, and then separate consecutive tasks building
-each item in the system individually.
+This pipeline currently only has the ability to create a single pipeline from a
+system passed to the parser by the user. It cannot create single stratum or
+clusters-of-systems pipelines right now, nor do we have the ability to
+automatically add testing scripts once the system build has finished. For
+multiple systems, the user will have to run `./construct-pipelines.sh` for each
+system in question.
 
 The eventual aim of this is to be able to build all systems in Baserock
 definitions with ease and once completed, run tests on the resulting artifacts.
