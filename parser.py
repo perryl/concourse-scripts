@@ -78,8 +78,6 @@ class SystemsParser():
                 repo = re.sub('upstream:', '', item['repo'])
                 upstream = 'delta'
             item['repo'] = self.set_url(upstream, repo)
-            if not 'unpetrify-ref' in item.keys():
-                item['unpetrify-ref'] = 'master'
             chunk_collection.append(item)
         return chunk_collection
 
@@ -90,7 +88,7 @@ class SystemsParser():
         task = {'aggregates': aggregates, 'config': config, 'privileged': True}
         job = {'name': strata['name'], 'public': True, 'plan': [task]}
         jobs = {'jobs': [job]}
-        resource = [{'name': x['name'], 'type': 'git', 'source': {'uri': x['repo'], 'branch': x['unpetrify-ref']}} for x in strata['chunks']]
+        resource = [{'name': x['name'], 'type': 'git', 'source': {'uri': x['repo'], 'branch': x.get('unpetrify-ref', 'master')}} for x in strata['chunks']]
         resources = {'resources': resource}
         system = jobs.copy()
         system.update(resources)
