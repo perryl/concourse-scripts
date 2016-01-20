@@ -68,6 +68,7 @@ class SystemsParser():
         inputs = [{'name': x['name']} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
+        inputs.append({'name': 'setupybd'})
         definitions = {'get': 'definitions', 'resource': 'definitions', 'trigger': True}
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
         setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml', 'config': {'params': {'YBD_CACHE_SERVER': '{{ybd-cache-server}}', 'YBD_CACHE_PASSWORD' : '{{ybd-cache-password}}'}}}
@@ -77,7 +78,7 @@ class SystemsParser():
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
         aggregates.append(definitions)
         aggregates.append(ybd)
-        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions/systems/%s.morph' % system_name]}}
+        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/systems/%s.morph' % system_name]}}
         task = {'config': config, 'privileged': True, 'name': 'build'}
         plan = [{'aggregate': aggregates}, setup_ybd_task, task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
