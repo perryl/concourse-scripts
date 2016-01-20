@@ -64,7 +64,7 @@ class SystemsParser():
     def transform_prefix(self, repo):
         return 'baserock' if 'baserock' in repo else 'delta'
 
-    def get_job_from_strata(self, strata):
+    def get_job_from_strata(self, strata, system_name):
         inputs = [{'name': x['name']} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
         definitions = {'get': 'definitions', 'resource': 'definitions', 'trigger': True}
@@ -73,7 +73,7 @@ class SystemsParser():
             definitions.update({'passed': build_depends})
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
         aggregates.append(definitions)
-        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions']}}
+        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions/systems/%s.morph' % system_name]}}
         task = {'aggregate': aggregates, 'config': config, 'privileged': True}
         job = {'name': strata['name'], 'public': True, 'plan': [task]}
         return job
@@ -97,7 +97,7 @@ class SystemsParser():
             build_depends_paths = ['definitions/%s' % a['morph'] for b in [x.get('build-depends',[]) for x in strata_yamls] for a in b]
             strata_paths = list(set(strata_paths) | set(build_depends_paths))
             strata_yamls = [self.open_file(x) for x in strata_paths]
-            jobs = [self.get_job_from_strata(x) for x in strata_yamls]
+            jobs = [self.get_job_from_strata(x, system_name) for x in strata_yamls]
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
