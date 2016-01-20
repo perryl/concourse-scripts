@@ -1,0 +1,1270 @@
+jobs:
+- name: build-essential
+  public: true
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+    - get: stage1-binutils
+      resource: stage1-binutils
+      trigger: true
+    - get: stage1-gcc
+      resource: stage1-gcc
+      trigger: true
+    - get: stage2-linux-api-headers
+      resource: stage2-linux-api-headers
+      trigger: true
+    - get: stage2-glibc
+      resource: stage2-glibc
+      trigger: true
+    - get: stage2-libstdc++
+      resource: stage2-libstdc++
+      trigger: true
+    - get: stage2-binutils
+      resource: stage2-binutils
+      trigger: true
+    - get: stage2-gcc-fixed-headers
+      resource: stage2-gcc-fixed-headers
+      trigger: true
+    - get: stage2-gcc
+      resource: stage2-gcc
+      trigger: true
+    - get: stage2-busybox
+      resource: stage2-busybox
+      trigger: true
+    - get: stage2-fake-bash
+      resource: stage2-fake-bash
+      trigger: true
+    - get: stage2-fhs-dirs
+      resource: stage2-fhs-dirs
+      trigger: true
+    - get: stage2-gawk
+      resource: stage2-gawk
+      trigger: true
+    - get: stage2-make
+      resource: stage2-make
+      trigger: true
+    - get: stage2-reset-specs
+      resource: stage2-reset-specs
+      trigger: true
+    - get: fhs-dirs
+      resource: fhs-dirs
+      trigger: true
+    - get: linux-api-headers
+      resource: linux-api-headers
+      trigger: true
+    - get: glibc
+      resource: glibc
+      trigger: true
+    - get: zlib
+      resource: zlib
+      trigger: true
+    - get: binutils
+      resource: binutils
+      trigger: true
+    - get: busybox
+      resource: busybox
+      trigger: true
+    - get: gawk
+      resource: gawk
+      trigger: true
+    - get: m4-tarball
+      resource: m4-tarball
+      trigger: true
+    - get: gcc
+      resource: gcc
+      trigger: true
+    - get: make
+      resource: make
+      trigger: true
+    - get: ccache
+      resource: ccache
+      trigger: true
+    privileged: true
+    config:
+      inputs:
+      - {name: definitions}
+      - {name: stage1-binutils}
+      - {name: stage1-gcc}
+      - {name: stage2-linux-api-headers}
+      - {name: stage2-glibc}
+      - {name: stage2-libstdc++}
+      - {name: stage2-binutils}
+      - {name: stage2-gcc-fixed-headers}
+      - {name: stage2-gcc}
+      - {name: stage2-busybox}
+      - {name: stage2-fake-bash}
+      - {name: stage2-fhs-dirs}
+      - {name: stage2-gawk}
+      - {name: stage2-make}
+      - {name: stage2-reset-specs}
+      - {name: fhs-dirs}
+      - {name: linux-api-headers}
+      - {name: glibc}
+      - {name: zlib}
+      - {name: binutils}
+      - {name: busybox}
+      - {name: gawk}
+      - {name: m4-tarball}
+      - {name: gcc}
+      - {name: make}
+      - {name: ccache}
+      platform: linux
+      image: docker:///perryl/perryl-concourse#latest
+      run:
+        path: ./ybd/ybd.py
+        args: [definitions/strata/build-essential.morph]
+- name: core
+  public: true
+  trigger: true
+  passed: [build-essential]
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+      passed: [build-essential]
+    - get: gdbm
+      resource: gdbm
+      trigger: true
+    - get: perl
+      resource: perl
+      trigger: true
+    - get: ncurses
+      resource: ncurses
+      trigger: true
+    - get: texinfo-tarball
+      resource: texinfo-tarball
+      trigger: true
+    - get: autoconf-tarball
+      resource: autoconf-tarball
+      trigger: true
+    - get: automake
+      resource: automake
+      trigger: true
+    - get: help2man
+      resource: help2man
+      trigger: true
+    - get: autoconf
+      resource: autoconf
+      trigger: true
+    - get: libtool-tarball
+      resource: libtool-tarball
+      trigger: true
+    - get: file
+      resource: file
+      trigger: true
+    - get: libexpat
+      resource: libexpat
+      trigger: true
+    - get: openssl-new
+      resource: openssl-new
+      trigger: true
+    - get: bzip2
+      resource: bzip2
+      trigger: true
+    - get: readline
+      resource: readline
+      trigger: true
+    - get: libffi
+      resource: libffi
+      trigger: true
+    - get: sqlite3
+      resource: sqlite3
+      trigger: true
+    - get: python3
+      resource: python3
+      trigger: true
+    - get: ca-certificates
+      resource: ca-certificates
+      trigger: true
+    - get: curl
+      resource: curl
+      trigger: true
+    - get: gettext-tarball
+      resource: gettext-tarball
+      trigger: true
+    - get: git-minimal
+      resource: git-minimal
+      trigger: true
+    - get: flex
+      resource: flex
+      trigger: true
+    - get: mini-utils
+      resource: mini-utils
+      trigger: true
+    - get: bison
+      resource: bison
+      trigger: true
+    - get: patch
+      resource: patch
+      trigger: true
+    - get: xz
+      resource: xz
+      trigger: true
+    - get: libtool
+      resource: libtool
+      trigger: true
+    - get: pkg-config
+      resource: pkg-config
+      trigger: true
+    - get: attr
+      resource: attr
+      trigger: true
+    - get: acl
+      resource: acl
+      trigger: true
+    - get: linux-pam
+      resource: linux-pam
+      trigger: true
+    - get: libcap2
+      resource: libcap2
+      trigger: true
+    - get: shadow
+      resource: shadow
+      trigger: true
+    - get: util-linux
+      resource: util-linux
+      trigger: true
+    - get: e2fsprogs
+      resource: e2fsprogs
+      trigger: true
+    - get: libxml2
+      resource: libxml2
+      trigger: true
+    - get: libxslt
+      resource: libxslt
+      trigger: true
+    - get: XML-Parser
+      resource: XML-Parser
+      trigger: true
+    - get: intltool
+      resource: intltool
+      trigger: true
+    - get: bash
+      resource: bash
+      trigger: true
+    - get: cmake
+      resource: cmake
+      trigger: true
+    - get: cython
+      resource: cython
+      trigger: true
+    - get: gperf
+      resource: gperf
+      trigger: true
+    - get: bc
+      resource: bc
+      trigger: true
+    - get: libseccomp
+      resource: libseccomp
+      trigger: true
+    privileged: true
+    config:
+      inputs:
+      - {name: definitions}
+      - {name: gdbm}
+      - {name: perl}
+      - {name: ncurses}
+      - {name: texinfo-tarball}
+      - {name: autoconf-tarball}
+      - {name: automake}
+      - {name: help2man}
+      - {name: autoconf}
+      - {name: libtool-tarball}
+      - {name: file}
+      - {name: libexpat}
+      - {name: openssl-new}
+      - {name: bzip2}
+      - {name: readline}
+      - {name: libffi}
+      - {name: sqlite3}
+      - {name: python3}
+      - {name: ca-certificates}
+      - {name: curl}
+      - {name: gettext-tarball}
+      - {name: git-minimal}
+      - {name: flex}
+      - {name: mini-utils}
+      - {name: bison}
+      - {name: patch}
+      - {name: xz}
+      - {name: libtool}
+      - {name: pkg-config}
+      - {name: attr}
+      - {name: acl}
+      - {name: linux-pam}
+      - {name: libcap2}
+      - {name: shadow}
+      - {name: util-linux}
+      - {name: e2fsprogs}
+      - {name: libxml2}
+      - {name: libxslt}
+      - {name: XML-Parser}
+      - {name: intltool}
+      - {name: bash}
+      - {name: cmake}
+      - {name: cython}
+      - {name: gperf}
+      - {name: bc}
+      - {name: libseccomp}
+      platform: linux
+      image: docker:///perryl/perryl-concourse#latest
+      run:
+        path: ./ybd/ybd.py
+        args: [definitions/strata/core.morph]
+- name: coreutils-common
+  public: true
+  passed: [core]
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+      passed: [core]
+    - get: coreutils
+      resource: coreutils
+      trigger: true
+    - get: sed
+      resource: sed
+      trigger: true
+    - get: diff
+      resource: diff
+      trigger: true
+    - get: tar
+      resource: tar
+      trigger: true
+    - get: findutils
+      resource: findutils
+      trigger: true
+    privileged: true
+    config:
+      inputs:
+      - {name: definitions}
+      - {name: coreutils}
+      - {name: sed}
+      - {name: diff}
+      - {name: tar}
+      - {name: findutils}
+      platform: linux
+      image: docker:///perryl/perryl-concourse#latest
+      run:
+        path: ./ybd/ybd.py
+        args: [definitions/strata/coreutils-common.morph]
+- name: foundation
+  public: true
+  passed: [coreutils-common]
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+      passed: [coreutils-common]
+    - get: bash-completion
+      resource: bash-completion
+      trigger: true
+    - get: groff
+      resource: groff
+      trigger: true
+    - get: kmod
+      resource: kmod
+      trigger: true
+    - get: time-zone-database
+      resource: time-zone-database
+      trigger: true
+    - get: pciutils
+      resource: pciutils
+      trigger: true
+    - get: dbus-pre
+      resource: dbus-pre
+      trigger: true
+    - get: libgpg-error
+      resource: libgpg-error
+      trigger: true
+    - get: libgcrypt
+      resource: libgcrypt
+      trigger: true
+    - get: systemd
+      resource: systemd
+      trigger: true
+    - get: libusb
+      resource: libusb
+      trigger: true
+    - get: usbutils
+      resource: usbutils
+      trigger: true
+    - get: lzo
+      resource: lzo
+      trigger: true
+    - get: fuse
+      resource: fuse
+      trigger: true
+    - get: btrfs-progs
+      resource: btrfs-progs
+      trigger: true
+    - get: dbus
+      resource: dbus
+      trigger: true
+    - get: openssh
+      resource: openssh
+      trigger: true
+    - get: tbdiff
+      resource: tbdiff
+      trigger: true
+    - get: rsync
+      resource: rsync
+      trigger: true
+    privileged: true
+    config:
+      inputs:
+      - {name: definitions}
+      - {name: bash-completion}
+      - {name: groff}
+      - {name: kmod}
+      - {name: time-zone-database}
+      - {name: pciutils}
+      - {name: dbus-pre}
+      - {name: libgpg-error}
+      - {name: libgcrypt}
+      - {name: systemd}
+      - {name: libusb}
+      - {name: usbutils}
+      - {name: lzo}
+      - {name: fuse}
+      - {name: btrfs-progs}
+      - {name: dbus}
+      - {name: openssh}
+      - {name: tbdiff}
+      - {name: rsync}
+      platform: linux
+      image: docker:///perryl/perryl-concourse#latest
+      run:
+        path: ./ybd/ybd.py
+        args: [definitions/strata/foundation.morph]
+- name: python2-core
+  public: true
+  passed: [core]
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+      passed: [core]
+    - get: python2
+      resource: python2
+      trigger: true
+    - get: python-setuptools
+      resource: python-setuptools
+      trigger: true
+    - get: mako
+      resource: mako
+      trigger: true
+    - get: pbr
+      resource: pbr
+      trigger: true
+    - get: python-requests
+      resource: python-requests
+      trigger: true
+    - get: six
+      resource: six
+      trigger: true
+    - get: pyyaml
+      resource: pyyaml
+      trigger: true
+    - get: cython2
+      resource: cython2
+      trigger: true
+    - get: python-lxml
+      resource: python-lxml
+      trigger: true
+    - get: python-markdown
+      resource: python-markdown
+      trigger: true
+    - get: libxml2-python2
+      resource: libxml2-python2
+      trigger: true
+    - get: jsonschema
+      resource: jsonschema
+      trigger: true
+    privileged: true
+    config:
+      inputs:
+      - {name: python2}
+      - {name: python-setuptools}
+      - {name: mako}
+      - {name: pbr}
+      - {name: python-requests}
+      - {name: six}
+      - {name: pyyaml}
+      - {name: cython2}
+      - {name: python-lxml}
+      - {name: python-markdown}
+      - {name: libxml2-python2}
+      - {name: jsonschema}
+      platform: linux
+      image: docker:///perryl/perryl-concourse#latest
+      run:
+        path: ./ybd/ybd.py
+        args: [definitions/strata/python2-core.morph]
+- name: docutils
+  public: true
+  passed: [python2-core]
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+      passed: [python2-core]
+    - get: xml-catalog
+      resource: xml-catalog
+      trigger: true
+    - get: docbook-xml
+      resource: docbook-xml
+      trigger: true
+    - get: docbook-xsl
+      resource: docbook-xsl
+      trigger: true
+    - get: asciidoc
+      resource: asciidoc
+      trigger: true
+    - get: xmlto
+      resource: xmlto
+      trigger: true
+    privileged: true
+    config:
+      inputs:
+      - {name: definitions}
+      - {name: xml-catalog}
+      - {name: docbook-xml}
+      - {name: docbook-xsl}
+      - {name: asciidoc}
+      - {name: xmlto}
+      platform: linux
+      image: docker:///perryl/perryl-concourse#latest
+      run:
+        path: ./ybd/ybd.py
+        args: [definitions/strata/docutils.morph]
+- name: bsp-x86_64-generic
+  public: true
+  passed: [docutils]
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+      passed: [docutils]
+    - get: linux-x86-64-generic
+      resource: linux-x86-64-generic
+      trigger: true
+    - get: nasm
+      resource: nasm
+      trigger: true
+    - get: syslinux
+      resource: syslinux
+      trigger: true
+    privileged: true
+    config:
+      inputs:
+      - {name: definitions}
+      - {name: linux-x86-64-generic}
+      - {name: nasm}
+      - {name: syslinux}
+      platform: linux
+      image: docker:///perryl/perryl-concourse#latest
+      run:
+        path: ./ybd/ybd.py
+        args: [definitions/strata/bsp-x86_64-generic.morph]
+- name: base-system-x86_64-generic.morph
+  public: true
+  passed: [bsp-x86_64-generic, foundation, core, build-essential]
+  plan:
+  - aggregate:
+    - get: definitions
+      resource: definitions
+      trigger: true
+      passed: [bsp-x86_64-generic, foundation, core, build-essential]
+resources:
+- name: stage1-binutils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/binutils-tarball.git
+    branch: binutils-2.25
+
+- name: stage1-gcc
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    branch: baserock/build-essential
+
+- name: stage2-linux-api-headers
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux.git
+    branch: v4.0
+
+- name: stage2-glibc
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/glibc.git
+    branch: glibc-2.21
+
+- name: stage2-libstdc++
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    branch: baserock/build-essential
+
+- name: stage2-binutils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/binutils-tarball.git
+    branch: binutils-2.25
+
+- name: stage2-gcc-fixed-headers
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    branch: baserock/build-essential
+
+- name: stage2-gcc
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    branch: baserock/build-essential
+
+- name: stage2-busybox
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/busybox.git
+    branch: 1_23_1
+
+- name: stage2-fake-bash
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bash.git
+    branch: baserock/bash-4.3-patch-27
+
+- name: stage2-fhs-dirs
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/fhs-dirs.git
+    branch: master
+
+- name: stage2-gawk
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gawk.git
+    branch: gawk-4.1-stable
+
+- name: stage2-make
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/make-tarball.git
+    branch: baserock/make-4.1-ttyname-segfault-fix
+
+- name: stage2-reset-specs
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/glibc.git
+    branch: glibc-2.21
+
+- name: fhs-dirs
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/fhs-dirs.git
+    branch: master
+
+- name: linux-api-headers
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux.git
+    branch: v4.0
+
+- name: glibc
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/glibc.git
+    branch: glibc-2.21
+
+- name: zlib
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/zlib.git
+    branch: v1.2.8
+
+- name: binutils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/binutils-tarball.git
+    branch: binutils-2.25
+
+- name: busybox
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/busybox.git
+    branch: 1_23_1
+
+- name: gawk
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gawk.git
+    branch: gawk-4.1.1
+
+- name: m4-tarball
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/m4-tarball.git
+    branch: m4-1.4.17
+
+- name: gcc
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    branch: baserock/build-essential
+
+- name: make
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/make-tarball.git
+    branch: baserock/make-4.1-ttyname-segfault-fix
+
+- name: ccache
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/ccache.git
+    branch: baserock/build-essential
+
+- name: gdbm
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gdbm-tarball.git
+    branch: gdbm-1.11
+
+- name: perl
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/perl.git
+    branch: v5.22.0
+
+- name: ncurses
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/ncurses.git
+    branch: ncurses-5.9-20150131
+
+- name: texinfo-tarball
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/texinfo-tarball.git
+    branch: texinfo-5.2
+
+- name: autoconf-tarball
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/autoconf-tarball.git
+    branch: autoconf-2.69
+
+- name: automake
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/automake.git
+    branch: v1.15
+
+- name: help2man
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/help2man.git
+    branch: baserock/v1.46.5
+
+- name: autoconf
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/autoconf.git
+    branch: baserock/v2.69-texinfo-fix
+
+- name: libtool-tarball
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libtool-tarball.git
+    branch: libtool-2.4.6
+
+- name: file
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/file.git
+    branch: file-5.22
+
+- name: libexpat
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libexpat.git
+    branch: R_2_1_0
+
+- name: openssl-new
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/openssl-new.git
+    branch: OpenSSL_1_0_1m
+
+- name: bzip2
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bzip2.git
+    branch: baserock/morph
+
+- name: readline
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/readline.git
+    branch: baserock/genivi/baseline
+
+- name: libffi
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libffi.git
+    branch: baserock/morph
+
+- name: sqlite3
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/sqlite3.git
+    branch: sqlite-autoconf-3080801
+
+- name: python3
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cpython.git
+    branch: v3.4.3
+
+- name: ca-certificates
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/ca-certificates.git
+    branch: baserock/debian/20150426
+
+- name: curl
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/curl.git
+    branch: curl-7_38_0
+
+- name: gettext-tarball
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gettext-tarball.git
+    branch: gettext-0.19.4
+
+- name: git-minimal
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/git.git
+    branch: v2.3.0
+
+- name: flex
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/flex.git
+    branch: baserock/build-essential
+
+- name: mini-utils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/mini-utils.git
+    branch: master
+
+- name: bison
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bison.git
+    branch: baserock/v3.0.2
+
+- name: patch
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/patch.git
+    branch: baserock/v2.7.1
+
+- name: xz
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/xz.git
+    branch: v5.2.0
+
+- name: libtool
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libtool.git
+    branch: baserock/v2.4.6
+
+- name: pkg-config
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pkg-config.git
+    branch: pkg-config-0.28
+
+- name: attr
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/attr.git
+    branch: baserock/morph
+
+- name: acl
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/acl.git
+    branch: v2.2.52
+
+- name: linux-pam
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux-pam.git
+    branch: Linux-PAM-1.1.8
+
+- name: libcap2
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libcap2.git
+    branch: baserock/morph
+
+- name: shadow
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/shadow.git
+    branch: upstream/4.2.1
+
+- name: util-linux
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/util-linux.git
+    branch: v2.27
+
+- name: e2fsprogs
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/e2fsprogs.git
+    branch: v1.42.12
+
+- name: libxml2
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libxml2.git
+    branch: v2.9.1
+
+- name: libxslt
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libxslt.git
+    branch: master
+
+- name: XML-Parser
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/XML-Parser.git
+    branch: baserock/morph
+
+- name: intltool
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/intltool.git
+    branch: baserock/morph
+
+- name: bash
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bash.git
+    branch: baserock/bash-4.3-patch-27
+
+- name: cmake
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cmake.git
+    branch: v3.2.1
+
+- name: cython
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cython.git
+    branch: 0.22
+
+- name: gperf
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gperf.git
+    branch: baserock/morph
+
+- name: bc
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bc-tarball.git
+    branch: baserock/morph
+
+- name: libseccomp
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libseccomp.git
+    branch: v2.2.3
+
+- name: coreutils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/coreutils.git
+    branch: baserock/8.23
+
+- name: sed
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/sed.git
+    branch: baserock/morph
+
+- name: diff
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/diffutils.git
+    branch: baserock/v3.3
+
+- name: tar
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/tar.git
+    branch: baserock/release_1_28
+
+- name: findutils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/findutils.git
+    branch: baserock/v4.5.14
+
+- name: bash-completion
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bash-completion.git
+    branch: 2.1
+
+- name: groff
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/groff-git.git
+    branch: 1.22.3
+
+- name: kmod
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/kmod.git
+    branch: v18
+
+- name: time-zone-database
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/tz.git
+    branch: 2015a
+
+- name: pciutils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pciutils.git
+    branch: baserock/morph
+
+- name: dbus-pre
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/dbus.git
+    branch: baserock/v1.10.0+custom_marshaling
+
+- name: libgpg-error
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libgpg-error.git
+    branch: libgpg-error-1.19
+
+- name: libgcrypt
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libgcrypt.git
+    branch: master
+
+- name: systemd
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/systemd.git
+    branch: v227
+
+- name: libusb
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libusb.git
+    branch: v1.0.19
+
+- name: usbutils
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/usbutils.git
+    branch: baserock/v008
+
+- name: lzo
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/lzo.git
+    branch: lzo-2.08
+
+- name: fuse
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/fuse.git
+    branch: baserock/morph
+
+- name: btrfs-progs
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/btrfs-progs.git
+    branch: v4.0
+
+- name: dbus
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/dbus.git
+    branch: baserock/v1.10.0+custom_marshaling
+
+- name: openssh
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/openssh-git.git
+    branch: baserock/morph
+
+- name: tbdiff
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/tbdiff.git
+    branch: master
+
+- name: rsync
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/rsync.git
+    branch: v3.1.1
+
+- name: python2
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cpython.git
+    branch: v2.7.10
+
+- name: python-setuptools
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-setuptools-bitbucket.git
+    branch: baserock/master
+
+- name: mako
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-packages/mako.git.git
+    branch: rel_1_0_0
+
+- name: pbr
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pbr.git
+    branch: 0.10.7
+
+- name: python-requests
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-requests.git
+    branch: v2.5.1
+
+- name: six
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/six.git
+    branch: 1.9.0
+
+- name: pyyaml
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pyyaml.git
+    branch: baserock/morph
+
+- name: cython2
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cython.git
+    branch: 0.22
+
+- name: python-lxml
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-lxml.git
+    branch: lxml-3.4.0
+
+- name: python-markdown
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-markdown.git
+    branch: 2.5.1-final
+
+- name: libxml2-python2
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libxml2.git
+    branch: v2.9.1
+
+- name: jsonschema
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/jsonschema.git
+    branch: v2.3.0
+
+- name: xml-catalog
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/xml-catalog.git
+    branch: master
+
+- name: docbook-xml
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/docbook-xml.git
+    branch: docbook-xml-4.5
+
+- name: docbook-xsl
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/docbook-xsl.git
+    branch: docbook-xsl-1.78.1
+
+- name: asciidoc
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/asciidoc.git
+    branch: 8.6.9
+
+- name: xmlto
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/xmlto-tarball.git
+    branch: xmlto-0.0.26
+
+- name: linux-x86-64-generic
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux-stable.git
+    branch: v4.4
+
+- name: nasm
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/nasm.git
+    branch: nasm-2.11.08
+
+- name: syslinux
+  type: git
+  source:
+    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/syslinux.git
+    branch: baserock/morph
+
+- name: definitions
+  type: git
+  source:
+    uri: git://git.baserock.org/baserock/baserock/definitions.git
+    branch: master
