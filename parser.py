@@ -70,6 +70,7 @@ class SystemsParser():
         inputs.append({'name': 'ybd'})
         definitions = {'get': 'definitions', 'resource': 'definitions', 'trigger': True}
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
+        setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml', 'config': {'params': {'YBD_CACHE_SERVER': '{{ybd-cache-server}}', 'YBD_CACHE_PASSWORD' : '{{ybd-cache-password}}'}}}
         build_depends = [self.open_file('definitions/%s' % x['morph'])['name'] for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
@@ -77,8 +78,9 @@ class SystemsParser():
         aggregates.append(definitions)
         aggregates.append(ybd)
         config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions/systems/%s.morph' % system_name]}}
-        task = {'aggregate': aggregates, 'config': config, 'privileged': True}
-        job = {'name': strata['name'], 'public': True, 'plan': [task]}
+        task = {'config': config, 'privileged': True, 'name': 'build'}
+        plan = [{'aggregate': aggregates}, setup_ybd_task, task]
+        job = {'name': strata['name'], 'public': True, 'plan': plan}
         return job
 
     def get_resource_from_chunk(self, x):
