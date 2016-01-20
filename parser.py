@@ -49,9 +49,9 @@ class SystemsParser():
             try:
                 yaml_stream = yaml.safe_load(f)
             except:
-                raise YamlLoadError(file_name)
+                raise YamlLoadError(morphology)
             if not isinstance(yaml_stream, dict):
-                raise InvalidFormatError(file_name)
+                raise InvalidFormatError(morphology)
         return yaml_stream
 
     def get_strata(self, system_file, morphology):
