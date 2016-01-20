@@ -87,6 +87,9 @@ class SystemsParser():
             # Progress to parsing strata
             strata_paths = self.get_strata(yaml_stream, args.system)
             strata_yamls = [self.open_file(x) for x in strata_paths]
+            build_depends_paths = ['definitions/%s' % a['morph'] for b in [x.get('build-depends',[]) for x in strata_yamls] for a in b]
+            strata_paths = list(set(strata_paths) | set(build_depends_paths))
+            strata_yamls = [self.open_file(x) for x in strata_paths]
             jobs = [self.get_job_from_strata(x) for x in strata_yamls]
             resources = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
         else:
