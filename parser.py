@@ -52,31 +52,24 @@ class SystemsParser():
                 raise YamlLoadError(file_name)
             if not isinstance(yaml_stream, dict):
                 raise InvalidFormatError(file_name)
-            if yaml_stream['kind'] == 'system':
-                # Progress to parsing strata
-                self.get_strata(yaml_stream, morphology)
-            elif yaml_stream['kind'] == 'stratum':
-                # Stratum parsed; parse chunks
-                self.get_chunks(yaml_stream, system_name)
-            else:
-                pass
+        return yaml_stream
 
     def get_strata(self, system_file, morphology):
         ''' Iterates through a yaml stream and finds all the strata'''
         # Iterate through the strata section of the system file
+        morph_path = []
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         for item in system_file['strata']:
-            morph_path = '%s/%s' % (morph_dir, item['morph'])
-            self.open_file(morph_path, system_file['name'])
+            morph_path.append('%s/%s' % (morph_dir, item['morph']))
+            return morph_path
 
     def set_url(self, upstream, repo):
         url = 'http://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (
               upstream, repo)
         return url
 
-    def get_chunks(self, strata_file, system_name):
+    def get_chunks(self, strata_file):
         chunk_collection = []
-        chunk_data = {}
         for item in strata_file['chunks']:
             if 'baserock:' in item['repo']:
                 repo = re.sub('baserock:', '', item['repo'])
@@ -84,34 +77,24 @@ class SystemsParser():
             else:
                 repo = re.sub('upstream:', '', item['repo'])
                 upstream = 'delta'
-            chunk_data['name'] = item['name']
             item['repo'] = self.set_url(upstream, repo)
             if not 'unpetrify-ref' in item.keys():
                 item['unpetrify-ref'] = 'master'
-            chunk_collection.append(chunk_data)
-        self.generate_jobs(strata_file, chunk_collection, system_name)
+            chunk_collection.append(item)
+        return chunk_collection
 
-    def generate_jobs(self, strata, chunks, system_name):
-        path = '%s/%s' % (os.getcwd(), system_name)
-        if not os.path.isdir(path):
-            os.mkdir(path)
-        file_out = '%s/%s-test.yml' % (path, system_name)
-        if not 'build-depends' in strata.keys():
-            passed = ''
-        else:
-            passed = strata['build-depends']
-        with open(file_out, 'w') as f:
-            inputs = [{'name': x['name']} for x in strata['chunks']]
-            aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
-            config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions']}}
-            task = {'aggregates': aggregates, 'config': config, 'privileged': True}
-            job = {'name': strata['name'], 'public': True, 'plan': [task]}
-            jobs = {'jobs': [job]}
-            resource = [{'name': x['name'], 'type': 'git', 'source': {'uri': x['repo'], 'branch': x['unpetrify-ref']}} for x in strata['chunks']]
-            resources = {'resources': resource}
-            system = jobs.copy()
-            system.update(resources)
-            f.write(yaml.dump(system, default_flow_style=False))
+    def generate_jobs(self, strata, chunks):
+        inputs = [{'name': x['name']} for x in strata['chunks']]
+        aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
+        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions']}}
+        task = {'aggregates': aggregates, 'config': config, 'privileged': True}
+        job = {'name': strata['name'], 'public': True, 'plan': [task]}
+        jobs = {'jobs': [job]}
+        resource = [{'name': x['name'], 'type': 'git', 'source': {'uri': x['repo'], 'branch': x['unpetrify-ref']}} for x in strata['chunks']]
+        resources = {'resources': resource}
+        system = jobs.copy()
+        system.update(resources)
+        return system
 
     def main(self):
         parser = argparse.ArgumentParser(
@@ -119,7 +102,26 @@ class SystemsParser():
         parser.add_argument('--system', type=str)
         args = parser.parse_args()
         system_name = os.path.splitext(os.path.basename(args.system))[0]
-        self.open_file(args.system, system_name)
+        yaml_stream = self.open_file(args.system, system_name)
+        if yaml_stream['kind'] == 'system':
+            # Progress to parsing strata
+            strata_paths = self.get_strata(yaml_stream, args.system)
+            for path in strata_paths:
+                strata_stream = self.open_file(path, system_name)
+                chunks = self.get_chunks(strata_stream)
+                system = self.generate_jobs(strata_stream, chunks)
+        if yaml_stream['kind'] == 'stratum':
+            # Stratum parsed; parse chunks
+            chunks = self.get_chunks(yaml_stream)
+            system = self.generate_jobs(strata_stream, chunks)
+        else:
+            pass
+        path = '%s/%s' % (os.getcwd(), system_name)
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        file_out = '%s/%s-test.yml' % (path, system_name)
+        with open(file_out, 'w') as f:
+            f.write(yaml.dump(system, default_flow_style=False))
 
 if __name__ == "__main__":
     SystemsParser().main()
