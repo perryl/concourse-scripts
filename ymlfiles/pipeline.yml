@@ -3,6 +3,9 @@ jobs:
   public: true
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -110,9 +113,15 @@ jobs:
       - {name: gcc}
       - {name: make}
       - {name: ccache}
-      platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      - task: setupybd
+        file: ybd/ci/setup.yml
+        config:
+          params:
+            YBD_CACHE_SERVER: {{ybd-cache-server}}
+            YBD_CACHE_PASSWORD: {{ybd-cache-password}}
       run:
+        platform: linux
+        image: docker:///perryl/perryl-concourse#latest
         path: ./ybd/ybd.py
         args: [definitions/strata/build-essential.morph]
 - name: core
@@ -121,6 +130,9 @@ jobs:
   passed: [build-essential]
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -309,9 +321,15 @@ jobs:
       - {name: gperf}
       - {name: bc}
       - {name: libseccomp}
-      platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      - task: setupybd
+        file: ybd/ci/setup.yml
+        config:
+          params:
+            YBD_CACHE_SERVER: {{ybd-cache-server}}
+            YBD_CACHE_PASSWORD: {{ybd-cache-password}}
       run:
+        platform: linux
+        image: docker:///perryl/perryl-concourse#latest
         path: ./ybd/ybd.py
         args: [definitions/strata/core.morph]
 - name: coreutils-common
@@ -319,6 +337,9 @@ jobs:
   passed: [core]
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -347,9 +368,15 @@ jobs:
       - {name: diff}
       - {name: tar}
       - {name: findutils}
-      platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      - task: setupybd
+        file: ybd/ci/setup.yml
+        config:
+         params:
+           YBD_CACHE_SERVER: {{ybd-cache-server}}
+           YBD_CACHE_PASSWORD: {{ybd-cache-password}}
       run:
+        platform: linux
+        image: docker:///perryl/perryl-concourse#latest
         path: ./ybd/ybd.py
         args: [definitions/strata/coreutils-common.morph]
 - name: foundation
@@ -357,6 +384,9 @@ jobs:
   passed: [coreutils-common]
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -437,9 +467,15 @@ jobs:
       - {name: openssh}
       - {name: tbdiff}
       - {name: rsync}
-      platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      - task: setupybd
+        file: ybd/ci/setup.yml
+        config:
+          params:
+            YBD_CACHE_SERVER: {{ybd-cache-server}}
+            YBD_CACHE_PASSWORD: {{ybd-cache-password}}
       run:
+        platform: linux
+        image: docker:///perryl/perryl-concourse#latest
         path: ./ybd/ybd.py
         args: [definitions/strata/foundation.morph]
 - name: python2-core
@@ -447,6 +483,9 @@ jobs:
   passed: [core]
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -502,9 +541,15 @@ jobs:
       - {name: python-markdown}
       - {name: libxml2-python2}
       - {name: jsonschema}
-      platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      - task: setupybd
+        file: ybd/ci/setup.yml
+        config:
+          params:
+            YBD_CACHE_SERVER: {{ybd-cache-server}}
+            YBD_CACHE_PASSWORD: {{ybd-cache-password}}
       run:
+        platform: linux
+        image: docker:///perryl/perryl-concourse#latest
         path: ./ybd/ybd.py
         args: [definitions/strata/python2-core.morph]
 - name: docutils
@@ -512,6 +557,9 @@ jobs:
   passed: [python2-core]
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -540,9 +588,15 @@ jobs:
       - {name: docbook-xsl}
       - {name: asciidoc}
       - {name: xmlto}
-      platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      - task: setupybd
+        file: ybd/ci/setup.yml
+        config:
+          params:
+            YBD_CACHE_SERVER: {{ybd-cache-server}}
+            YBD_CACHE_PASSWORD: {{ybd-cache-password}}
       run:
+        platform: linux
+        image: docker:///perryl/perryl-concourse#latest
         path: ./ybd/ybd.py
         args: [definitions/strata/docutils.morph]
 - name: bsp-x86_64-generic
@@ -550,6 +604,9 @@ jobs:
   passed: [docutils]
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -570,9 +627,15 @@ jobs:
       - {name: linux-x86-64-generic}
       - {name: nasm}
       - {name: syslinux}
-      platform: linux
-      image: docker:///perryl/perryl-concourse#latest
+      - task: setupybd
+        file: ybd/ci/setup.yml
+        config:
+          params:
+            YBD_CACHE_SERVER: {{ybd-cache-server}}
+            YBD_CACHE_PASSWORD: {{ybd-cache-password}}
       run:
+        platform: linux
+        image: docker:///perryl/perryl-concourse#latest
         path: ./ybd/ybd.py
         args: [definitions/strata/bsp-x86_64-generic.morph]
 - name: base-system-x86_64-generic.morph
@@ -580,6 +643,9 @@ jobs:
   passed: [bsp-x86_64-generic, foundation, core, build-essential]
   plan:
   - aggregate:
+    - get: ybd
+      resource: ybd
+      trigger: true
     - get: definitions
       resource: definitions
       trigger: true
@@ -588,683 +654,689 @@ resources:
 - name: stage1-binutils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/binutils-tarball.git
+    uri: git://git.baserock.org/delta/binutils-tarball.git
     branch: binutils-2.25
 
 - name: stage1-gcc
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    uri: git://git.baserock.org/delta/gcc-tarball.git
     branch: baserock/build-essential
 
 - name: stage2-linux-api-headers
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux.git
+    uri: git://git.baserock.org/delta/linux.git
     branch: v4.0
 
 - name: stage2-glibc
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/glibc.git
+    uri: git://git.baserock.org/delta/glibc.git
     branch: glibc-2.21
 
 - name: stage2-libstdc++
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    uri: git://git.baserock.org/delta/gcc-tarball.git
     branch: baserock/build-essential
 
 - name: stage2-binutils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/binutils-tarball.git
+    uri: git://git.baserock.org/delta/binutils-tarball.git
     branch: binutils-2.25
 
 - name: stage2-gcc-fixed-headers
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    uri: git://git.baserock.org/delta/gcc-tarball.git
     branch: baserock/build-essential
 
 - name: stage2-gcc
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    uri: git://git.baserock.org/delta/gcc-tarball.git
     branch: baserock/build-essential
 
 - name: stage2-busybox
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/busybox.git
-    branch: 1_23_1
+    uri: git://git.baserock.org/delta/busybox.git
+    branch: "1_23_1"
 
 - name: stage2-fake-bash
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bash.git
+    uri: git://git.baserock.org/delta/bash.git
     branch: baserock/bash-4.3-patch-27
 
 - name: stage2-fhs-dirs
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/fhs-dirs.git
+    uri: git://git.baserock.org/baserock/baserock/fhs-dirs.git
     branch: master
 
 - name: stage2-gawk
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gawk.git
+    uri: git://git.baserock.org/delta/gawk.git
     branch: gawk-4.1-stable
 
 - name: stage2-make
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/make-tarball.git
+    uri: git://git.baserock.org/delta/make-tarball.git
     branch: baserock/make-4.1-ttyname-segfault-fix
 
 - name: stage2-reset-specs
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/glibc.git
+    uri: git://git.baserock.org/delta/glibc.git
     branch: glibc-2.21
 
 - name: fhs-dirs
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/fhs-dirs.git
+    uri: git://git.baserock.org/baserock/baserock/fhs-dirs.git
     branch: master
 
 - name: linux-api-headers
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux.git
+    uri: git://git.baserock.org/delta/linux.git
     branch: v4.0
 
 - name: glibc
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/glibc.git
+    uri: git://git.baserock.org/delta/glibc.git
     branch: glibc-2.21
 
 - name: zlib
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/zlib.git
+    uri: git://git.baserock.org/delta/zlib.git
     branch: v1.2.8
 
 - name: binutils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/binutils-tarball.git
+    uri: git://git.baserock.org/delta/binutils-tarball.git
     branch: binutils-2.25
 
 - name: busybox
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/busybox.git
-    branch: 1_23_1
+    uri: git://git.baserock.org/delta/busybox.git
+    branch: "1_23_1"
 
 - name: gawk
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gawk.git
+    uri: git://git.baserock.org/delta/gawk.git
     branch: gawk-4.1.1
 
 - name: m4-tarball
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/m4-tarball.git
+    uri: git://git.baserock.org/delta/m4-tarball.git
     branch: m4-1.4.17
 
 - name: gcc
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gcc-tarball.git
+    uri: git://git.baserock.org/delta/gcc-tarball.git
     branch: baserock/build-essential
 
 - name: make
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/make-tarball.git
+    uri: git://git.baserock.org/delta/make-tarball.git
     branch: baserock/make-4.1-ttyname-segfault-fix
 
 - name: ccache
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/ccache.git
+    uri: git://git.baserock.org/delta/ccache.git
     branch: baserock/build-essential
 
 - name: gdbm
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gdbm-tarball.git
+    uri: git://git.baserock.org/delta/gdbm-tarball.git
     branch: gdbm-1.11
 
 - name: perl
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/perl.git
+    uri: git://git.baserock.org/delta/perl.git
     branch: v5.22.0
 
 - name: ncurses
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/ncurses.git
+    uri: git://git.baserock.org/delta/ncurses.git
     branch: ncurses-5.9-20150131
 
 - name: texinfo-tarball
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/texinfo-tarball.git
+    uri: git://git.baserock.org/delta/texinfo-tarball.git
     branch: texinfo-5.2
 
 - name: autoconf-tarball
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/autoconf-tarball.git
+    uri: git://git.baserock.org/delta/autoconf-tarball.git
     branch: autoconf-2.69
 
 - name: automake
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/automake.git
+    uri: git://git.baserock.org/delta/automake.git
     branch: v1.15
 
 - name: help2man
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/help2man.git
+    uri: git://git.baserock.org/delta/help2man.git
     branch: baserock/v1.46.5
 
 - name: autoconf
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/autoconf.git
+    uri: git://git.baserock.org/delta/autoconf.git
     branch: baserock/v2.69-texinfo-fix
 
 - name: libtool-tarball
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libtool-tarball.git
+    uri: git://git.baserock.org/delta/libtool-tarball.git
     branch: libtool-2.4.6
 
 - name: file
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/file.git
+    uri: git://git.baserock.org/delta/file.git
     branch: file-5.22
 
 - name: libexpat
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libexpat.git
+    uri: git://git.baserock.org/delta/libexpat.git
     branch: R_2_1_0
 
 - name: openssl-new
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/openssl-new.git
+    uri: git://git.baserock.org/delta/openssl-new.git
     branch: OpenSSL_1_0_1m
 
 - name: bzip2
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bzip2.git
+    uri: git://git.baserock.org/delta/bzip2.git
     branch: baserock/morph
 
 - name: readline
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/readline.git
+    uri: git://git.baserock.org/delta/readline.git
     branch: baserock/genivi/baseline
 
 - name: libffi
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libffi.git
+    uri: git://git.baserock.org/delta/libffi.git
     branch: baserock/morph
 
 - name: sqlite3
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/sqlite3.git
+    uri: git://git.baserock.org/delta/sqlite3.git
     branch: sqlite-autoconf-3080801
 
 - name: python3
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cpython.git
+    uri: git://git.baserock.org/delta/cpython.git
     branch: v3.4.3
 
 - name: ca-certificates
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/ca-certificates.git
+    uri: git://git.baserock.org/delta/ca-certificates.git
     branch: baserock/debian/20150426
 
 - name: curl
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/curl.git
+    uri: git://git.baserock.org/delta/curl.git
     branch: curl-7_38_0
 
 - name: gettext-tarball
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gettext-tarball.git
+    uri: git://git.baserock.org/delta/gettext-tarball.git
     branch: gettext-0.19.4
 
 - name: git-minimal
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/git.git
+    uri: git://git.baserock.org/delta/git.git
     branch: v2.3.0
 
 - name: flex
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/flex.git
+    uri: git://git.baserock.org/delta/flex.git
     branch: baserock/build-essential
 
 - name: mini-utils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/mini-utils.git
+    uri: git://git.baserock.org/baserock/baserock/mini-utils.git
     branch: master
 
 - name: bison
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bison.git
+    uri: git://git.baserock.org/delta/bison.git
     branch: baserock/v3.0.2
 
 - name: patch
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/patch.git
+    uri: git://git.baserock.org/delta/patch.git
     branch: baserock/v2.7.1
 
 - name: xz
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/xz.git
+    uri: git://git.baserock.org/delta/xz.git
     branch: v5.2.0
 
 - name: libtool
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libtool.git
+    uri: git://git.baserock.org/delta/libtool.git
     branch: baserock/v2.4.6
 
 - name: pkg-config
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pkg-config.git
+    uri: git://git.baserock.org/delta/pkg-config.git
     branch: pkg-config-0.28
 
 - name: attr
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/attr.git
+    uri: git://git.baserock.org/delta/attr.git
     branch: baserock/morph
 
 - name: acl
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/acl.git
+    uri: git://git.baserock.org/delta/acl.git
     branch: v2.2.52
 
 - name: linux-pam
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux-pam.git
+    uri: git://git.baserock.org/delta/linux-pam.git
     branch: Linux-PAM-1.1.8
 
 - name: libcap2
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libcap2.git
+    uri: git://git.baserock.org/delta/libcap2.git
     branch: baserock/morph
 
 - name: shadow
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/shadow.git
+    uri: git://git.baserock.org/delta/shadow.git
     branch: upstream/4.2.1
 
 - name: util-linux
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/util-linux.git
+    uri: git://git.baserock.org/delta/util-linux.git
     branch: v2.27
 
 - name: e2fsprogs
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/e2fsprogs.git
+    uri: git://git.baserock.org/delta/e2fsprogs.git
     branch: v1.42.12
 
 - name: libxml2
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libxml2.git
+    uri: git://git.baserock.org/delta/libxml2.git
     branch: v2.9.1
 
 - name: libxslt
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libxslt.git
+    uri: git://git.baserock.org/delta/libxslt.git
     branch: master
 
 - name: XML-Parser
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/XML-Parser.git
+    uri: git://git.baserock.org/delta/XML-Parser.git
     branch: baserock/morph
 
 - name: intltool
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/intltool.git
+    uri: git://git.baserock.org/delta/intltool.git
     branch: baserock/morph
 
 - name: bash
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bash.git
+    uri: git://git.baserock.org/delta/bash.git
     branch: baserock/bash-4.3-patch-27
 
 - name: cmake
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cmake.git
+    uri: git://git.baserock.org/delta/cmake.git
     branch: v3.2.1
 
 - name: cython
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cython.git
+    uri: git://git.baserock.org/delta/cython.git
     branch: 0.22
 
 - name: gperf
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/gperf.git
+    uri: git://git.baserock.org/delta/gperf.git
     branch: baserock/morph
 
 - name: bc
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bc-tarball.git
+    uri: git://git.baserock.org/delta/bc-tarball.git
     branch: baserock/morph
 
 - name: libseccomp
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libseccomp.git
+    uri: git://git.baserock.org/delta/libseccomp.git
     branch: v2.2.3
 
 - name: coreutils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/coreutils.git
+    uri: git://git.baserock.org/delta/coreutils.git
     branch: baserock/8.23
 
 - name: sed
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/sed.git
+    uri: git://git.baserock.org/delta/sed.git
     branch: baserock/morph
 
 - name: diff
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/diffutils.git
+    uri: git://git.baserock.org/delta/diffutils.git
     branch: baserock/v3.3
 
 - name: tar
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/tar.git
+    uri: git://git.baserock.org/delta/tar.git
     branch: baserock/release_1_28
 
 - name: findutils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/findutils.git
+    uri: git://git.baserock.org/delta/findutils.git
     branch: baserock/v4.5.14
 
 - name: bash-completion
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/bash-completion.git
+    uri: git://git.baserock.org/delta/bash-completion.git
     branch: 2.1
 
 - name: groff
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/groff-git.git
+    uri: git://git.baserock.org/delta/groff-git.git
     branch: 1.22.3
 
 - name: kmod
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/kmod.git
+    uri: git://git.baserock.org/delta/kmod.git
     branch: v18
 
 - name: time-zone-database
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/tz.git
+    uri: git://git.baserock.org/delta/tz.git
     branch: 2015a
 
 - name: pciutils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pciutils.git
+    uri: git://git.baserock.org/delta/pciutils.git
     branch: baserock/morph
 
 - name: dbus-pre
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/dbus.git
+    uri: git://git.baserock.org/delta/dbus.git
     branch: baserock/v1.10.0+custom_marshaling
 
 - name: libgpg-error
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libgpg-error.git
+    uri: git://git.baserock.org/delta/libgpg-error.git
     branch: libgpg-error-1.19
 
 - name: libgcrypt
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libgcrypt.git
+    uri: git://git.baserock.org/delta/libgcrypt.git
     branch: master
 
 - name: systemd
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/systemd.git
+    uri: git://git.baserock.org/delta/systemd.git
     branch: v227
 
 - name: libusb
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libusb.git
+    uri: git://git.baserock.org/delta/libusb.git
     branch: v1.0.19
 
 - name: usbutils
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/usbutils.git
+    uri: git://git.baserock.org/delta/usbutils.git
     branch: baserock/v008
 
 - name: lzo
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/lzo.git
+    uri: git://git.baserock.org/delta/lzo.git
     branch: lzo-2.08
 
 - name: fuse
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/fuse.git
+    uri: git://git.baserock.org/delta/fuse.git
     branch: baserock/morph
 
 - name: btrfs-progs
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/btrfs-progs.git
+    uri: git://git.baserock.org/delta/btrfs-progs.git
     branch: v4.0
 
 - name: dbus
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/dbus.git
+    uri: git://git.baserock.org/delta/dbus.git
     branch: baserock/v1.10.0+custom_marshaling
 
 - name: openssh
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/openssh-git.git
+    uri: git://git.baserock.org/delta/openssh-git.git
     branch: baserock/morph
 
 - name: tbdiff
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/tbdiff.git
+    uri: git://git.baserock.org/baserock/baserock/tbdiff.git
     branch: master
 
 - name: rsync
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/rsync.git
+    uri: git://git.baserock.org/delta/rsync.git
     branch: v3.1.1
 
 - name: python2
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cpython.git
-    branch: v2.7.10
+    uri: git://git.baserock.org/delta/cpython.git
+    branch: v2.7.11
 
 - name: python-setuptools
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-setuptools-bitbucket.git
+    uri: git://git.baserock.org/delta/python-setuptools-bitbucket.git
     branch: baserock/master
 
 - name: mako
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-packages/mako.git.git
+    uri: git://git.baserock.org/delta/python-packages/mako.git
     branch: rel_1_0_0
 
 - name: pbr
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pbr.git
+    uri: git://git.baserock.org/delta/pbr.git
     branch: 0.10.7
 
 - name: python-requests
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-requests.git
+    uri: git://git.baserock.org/delta/python-requests.git
     branch: v2.5.1
 
 - name: six
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/six.git
+    uri: git://git.baserock.org/delta/six.git
     branch: 1.9.0
 
 - name: pyyaml
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/pyyaml.git
+    uri: git://git.baserock.org/delta/pyyaml.git
     branch: baserock/morph
 
 - name: cython2
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/cython.git
+    uri: git://git.baserock.org/delta/cython.git
     branch: 0.22
 
 - name: python-lxml
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-lxml.git
+    uri: git://git.baserock.org/delta/python-lxml.git
     branch: lxml-3.4.0
 
 - name: python-markdown
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/python-markdown.git
+    uri: git://git.baserock.org/delta/python-markdown.git
     branch: 2.5.1-final
 
 - name: libxml2-python2
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/libxml2.git
+    uri: git://git.baserock.org/delta/libxml2.git
     branch: v2.9.1
 
 - name: jsonschema
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/jsonschema.git
+    uri: git://git.baserock.org/delta/jsonschema.git
     branch: v2.3.0
 
 - name: xml-catalog
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/baserock/baserock/xml-catalog.git
+    uri: git://git.baserock.org/baserock/baserock/xml-catalog.git
     branch: master
 
 - name: docbook-xml
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/docbook-xml.git
+    uri: git://git.baserock.org/delta/docbook-xml.git
     branch: docbook-xml-4.5
 
 - name: docbook-xsl
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/docbook-xsl.git
+    uri: git://git.baserock.org/delta/docbook-xsl.git
     branch: docbook-xsl-1.78.1
 
 - name: asciidoc
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/asciidoc.git
+    uri: git://git.baserock.org/delta/asciidoc.git
     branch: 8.6.9
 
 - name: xmlto
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/xmlto-tarball.git
+    uri: git://git.baserock.org/delta/xmlto-tarball.git
     branch: xmlto-0.0.26
 
 - name: linux-x86-64-generic
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/linux-stable.git
+    uri: git://git.baserock.org/delta/linux-stable.git
     branch: v4.4
 
 - name: nasm
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/nasm.git
+    uri: git://git.baserock.org/delta/nasm.git
     branch: nasm-2.11.08
 
 - name: syslinux
   type: git
   source:
-    uri: http://git.baserock.org/cgi-bin/cgit.cgi/delta/syslinux.git
+    uri: git://git.baserock.org/delta/syslinux.git
     branch: baserock/morph
 
 - name: definitions
   type: git
   source:
     uri: git://git.baserock.org/baserock/baserock/definitions.git
+    branch: master
+
+- name: ybd
+  type: git
+  source:
+    uri: git://github.com/locallycompact/ybd
     branch: master
