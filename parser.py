@@ -81,7 +81,8 @@ class SystemsParser():
             chunk_data['name'] = item['name']
             chunk_data['repo'] = self.set_url(upstream, repo)
             if not 'unpetrify-ref' in item.keys():
-                chunk_data['unpetrify-ref'] = 'master'
+                item['unpetrify-ref'] = 'master'
+            chunk_data['unpetrify-ref'] = item['unpetrify-ref']
             chunk_collection.append(chunk_data)
         return chunk_collection
 
