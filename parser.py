@@ -92,13 +92,6 @@ class SystemsParser():
         self.generate_jobs(strata_file, chunk_collection, system_name)
 
     def generate_jobs(self, strata, chunks, system_name):
-        jobs = {}
-        plan = {}
-        config = {}
-        run = {}
-        aggregate = {}
-        input = {}
-        source = {}
         path = '%s/%s' % (os.getcwd(), system_name)
         if not os.path.isdir(path):
             os.mkdir(path)
@@ -119,11 +112,6 @@ class SystemsParser():
             system = jobs.copy()
             system.update(resources)
             f.write(yaml.dump(system, default_flow_style=False))
-
-    def generate_resources(self, strata):
-        uri = [{'uri': x['repo']} for x in strata['chunks']]
-        branch = [{'branch': x['unpetrify-ref']} for x in strata['chunks']]
-        return resources
 
     def main(self):
         parser = argparse.ArgumentParser(
