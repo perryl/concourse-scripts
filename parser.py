@@ -79,7 +79,7 @@ class SystemsParser():
         aggregates.append(definitions)
         aggregates.append(ybd)
         config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/systems/%s.morph' % system_name]}}
-        task = {'config': config, 'privileged': True, 'name': 'build'}
+        task = {'config': config, 'privileged': True, 'task': 'build'}
         plan = [{'aggregate': aggregates}, setup_ybd_task, task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
         return job
