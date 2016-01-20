@@ -66,18 +66,21 @@ class SystemsParser():
         inputs = [{'name': x['name']} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
+        inputs.append({'name': 'setupybd'})
         definitions = {'get': 'definitions', 'resource': 'definitions', 'trigger': True}
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
+        setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml', 'config': {'params': {'YBD_CACHE_SERVER': '{{ybd-cache-server}}', 'YBD_CACHE_PASSWORD' : '{{ybd-cache-password}}'}}}
         build_depends = [self.load_yaml_from_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
         aggregates.append(definitions)
         aggregates.append(ybd)
-        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name']]}}
-        task = {'aggregate': aggregates, 'config': config, 'privileged': True}
-        job = {'name': strata['name'], 'public': True, 'plan': [task]}
+        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name']]}}
+        task = {'config': config, 'privileged': True, 'task': 'build'}
+        plan = [{'aggregate': aggregates}, setup_ybd_task, task]
+        job = {'name': strata['name'], 'public': True, 'plan': plan}
         return job
 
     def get_resource_from_chunk(self, x):
@@ -123,7 +126,9 @@ class SystemsParser():
             os.mkdir(path)
         file_out = '%s/%s.yml' % (path, system_name)
         with open(file_out, 'w') as f:
-            f.write(yaml.dump(system, default_flow_style=False))
+            stream = yaml.dump(system, default_flow_style=False)
+            f.write(stream.replace("'{{ybd-cache-password}}'", "{{ybd-cache-password}}")
+                          .replace("'{{ybd-cache-server}}'", "{{ybd-cache-server}}"))
 
 if __name__ == "__main__":
     SystemsParser().main()
