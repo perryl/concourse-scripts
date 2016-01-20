@@ -108,35 +108,15 @@ class SystemsParser():
         else:
             passed = strata['build-depends']
         with open(file_out, 'w') as f:
-            for key, value in strata.iteritems():
-                if key == 'chunks':
-                    jobs['name'] = strata['name']
-                    jobs['public'] = 'True'
-                    jobs['trigger'] = 'True'
-                    jobs['passed'] = '[%s]' % passed
-                    jobs['plan'] = plan
-                    for chunk in value:
-                        aggregate['get'] = chunk['name']
-                        aggregate['resource'] = chunk['name']
-                        aggregate['trigger'] = 'True'
-                        aggregate['passed'] = '[%s]' % passed
-                        plan['aggregate'] = aggregate
-                    plan['task'] = strata['name']
-                    plan['privileged'] = 'True'
-                    plan['config'] = config
-                    for chunk in value:
-                        input['name'] = chunk['name']
-                        config['input'] = input
-                    config['platform'] = 'linux'
-                    config['image'] = 'docker:///perryl/perryl-concourse#latest'
-                    run['args'] = '[ definitions/strata/%s.morph ]' % strata['name']
-                    run['path'] = './ybd/ybd.py'
-                    config['run'] = run
-                else:
-                    pass
-                f.write(yaml.dump(jobs, default_flow_style=False))
+            inputs = [{'name': x['name']} for x in strata['chunks']]
+            aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
+            config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions']}}
+            task = {'aggregates': aggregates, 'config': config, 'privileged': True}
+            job = {'name': strata['name'], 'public': True, 'plan': [task]}
+            jobs = {'jobs': [job]}
+            f.write(yaml.dump(jobs, default_flow_style=False))
 
-    def generate_resources(self):
+    def generate_resources(self, system_file):
         resources = {}
 
         for chunk in value:
@@ -145,11 +125,6 @@ class SystemsParser():
             source['uri'] = chunk['repo']
             source['branch'] = chunk['unpetrify-ref']
             resources['source'] = source
-        '''for chunk in value:
-            f.write("- name: %s\n  type: git\n  source:\n    uri: %s" \
-                    "\n    branch: %s\n\n" % (
-                    chunk['name'], chunk['repo'],
-                    chunk['unpetrify-ref']))'''
 
     def main(self):
         parser = argparse.ArgumentParser(
