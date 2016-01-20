@@ -111,7 +111,7 @@ class SystemsParser():
         path = '%s/%s' % (os.getcwd(), system_name)
         if not os.path.isdir(path):
             os.mkdir(path)
-        file_out = '%s/%s-test.yml' % (path, system_name)
+        file_out = '%s/%s.yml' % (path, system_name)
         with open(file_out, 'w') as f:
             f.write(yaml.dump(system, default_flow_style=False))
 
