@@ -141,7 +141,7 @@ class SystemsParser():
             for item in pipelines:
                 stratum = self.open_file(item, system_name)
                 jobs.append(stratum['jobs'])
-                resources.append(stratum['jobs'])
+                resources.append(stratum['resources'])
             system['jobs'] = jobs
             system['resources'] = resources
             f.write(yaml.dump(system, default_flow_style=False))
