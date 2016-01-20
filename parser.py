@@ -63,32 +63,17 @@ class SystemsParser():
             morph_path.append('%s/%s' % (morph_dir, item['morph']))
             return morph_path
 
-    def set_url(self, upstream, repo):
-        url = 'git://git.baserock.org/cgi-bin/cgit.cgi/%s/%s.git' % (
-              upstream, repo)
-        return url
+    def transform_prefix(self, repo):
+        return 'baserock' if 'baserock' in repo else 'delta'
 
-    def get_chunks(self, strata_file):
-        chunk_collection = []
-        for item in strata_file['chunks']:
-            if 'baserock:' in item['repo']:
-                repo = re.sub('baserock:', '', item['repo'])
-                upstream = 'baserock'
-            else:
-                repo = re.sub('upstream:', '', item['repo'])
-                upstream = 'delta'
-            item['repo'] = self.set_url(upstream, repo)
-            chunk_collection.append(item)
-        return chunk_collection
-
-    def generate_jobs(self, strata, chunks):
+    def generate_jobs(self, strata):
         inputs = [{'name': x['name']} for x in strata['chunks']]
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
         config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions']}}
         task = {'aggregates': aggregates, 'config': config, 'privileged': True}
         job = {'name': strata['name'], 'public': True, 'plan': [task]}
         jobs = {'jobs': [job]}
-        resource = [{'name': x['name'], 'type': 'git', 'source': {'uri': x['repo'], 'branch': x.get('unpetrify-ref', 'master')}} for x in strata['chunks']]
+        resource = [{'name': x['name'], 'type': 'git', 'source': {'uri': 'http://git.baserock.org/git/%s/%s' % (self.transform_prefix(x['repo']), re.search(':(.*)', x['repo']).groups(1)[0]), 'branch': x.get('unpetrify-ref', 'master')}} for x in strata['chunks']]
         resources = {'resources': resource}
         system = jobs.copy()
         system.update(resources)
@@ -106,12 +91,10 @@ class SystemsParser():
             strata_paths = self.get_strata(yaml_stream, args.system)
             for path in strata_paths:
                 strata_stream = self.open_file(path, system_name)
-                chunks = self.get_chunks(strata_stream)
-                system = self.generate_jobs(strata_stream, chunks)
+                system = self.generate_jobs(strata_stream)
         if yaml_stream['kind'] == 'stratum':
             # Stratum parsed; parse chunks
-            chunks = self.get_chunks(yaml_stream)
-            system = self.generate_jobs(strata_stream, chunks)
+            system = self.generate_jobs(strata_stream)
         else:
             pass
         path = '%s/%s' % (os.getcwd(), system_name)
