@@ -114,17 +114,16 @@ class SystemsParser():
             task = {'aggregates': aggregates, 'config': config, 'privileged': True}
             job = {'name': strata['name'], 'public': True, 'plan': [task]}
             jobs = {'jobs': [job]}
-            f.write(yaml.dump(jobs, default_flow_style=False))
+            resource = [{'name': x['name'], 'type': 'git', 'source': {'uri': x['repo'], 'branch': x['unpetrify-ref']}} for x in strata['chunks']]
+            resources = {'resources': resource}
+            system = jobs.copy()
+            system.update(resources)
+            f.write(yaml.dump(system, default_flow_style=False))
 
-    def generate_resources(self, system_file):
-        resources = {}
-
-        for chunk in value:
-            resources['name'] = chunk['name']
-            resources['type'] = 'git'
-            source['uri'] = chunk['repo']
-            source['branch'] = chunk['unpetrify-ref']
-            resources['source'] = source
+    def generate_resources(self, strata):
+        uri = [{'uri': x['repo']} for x in strata['chunks']]
+        branch = [{'branch': x['unpetrify-ref']} for x in strata['chunks']]
+        return resources
 
     def main(self):
         parser = argparse.ArgumentParser(
