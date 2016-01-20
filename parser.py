@@ -67,7 +67,7 @@ class SystemsParser():
         inputs = [{'name': x['name']} for x in strata['chunks']]
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
         config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd/py', 'args': ['definitions']}}
-        task = {'aggregates': aggregates, 'config': config, 'privileged': True}
+        task = {'aggregate': aggregates, 'config': config, 'privileged': True}
         job = {'name': strata['name'], 'public': True, 'plan': [task]}
         return job
 
