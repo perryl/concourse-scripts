@@ -64,13 +64,14 @@ class SystemsParser():
     def transform_prefix(self, repo):
         return 'baserock' if 'baserock' in repo else 'delta'
 
-    def get_job_from_strata(self, strata, system_name):
+    def get_job_from_strata(self, strata, system_name, morphology):
         inputs = [{'name': x['name']} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
         definitions = {'get': 'definitions', 'resource': 'definitions', 'trigger': True}
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
-        build_depends = [self.open_file('definitions/%s' % x['morph'])['name'] for x in strata.get('build-depends', [])]
+        morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
+        build_depends = [self.open_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
@@ -97,10 +98,11 @@ class SystemsParser():
             # Progress to parsing strata
             strata_paths = self.get_strata(yaml_stream, args.system)
             strata_yamls = [self.open_file(x) for x in strata_paths]
-            build_depends_paths = ['definitions/%s' % a['morph'] for b in [x.get('build-depends',[]) for x in strata_yamls] for a in b]
+            morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
+            build_depends_paths = ['%s/%s' % (morph_dir, a['morph']) for b in [x.get('build-depends',[]) for x in strata_yamls] for a in b]
             strata_paths = list(set(strata_paths) | set(build_depends_paths))
             strata_yamls = [self.open_file(x) for x in strata_paths]
-            jobs = [self.get_job_from_strata(x, system_name) for x in strata_yamls]
+            jobs = [self.get_job_from_strata(x, system_name, args.system) for x in strata_yamls]
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
