@@ -62,7 +62,7 @@ class SystemsParser():
     def transform_prefix(self, repo):
         return 'baserock' if 'baserock' in repo else 'delta'
 
-    def get_job_from_strata(self, strata, system_name, morphology):
+    def get_job_from_strata(self, strata, system_name, morphology, arch):
         inputs = [{'name': x['name']} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
@@ -77,7 +77,7 @@ class SystemsParser():
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
         aggregates.append(definitions)
         aggregates.append(ybd)
-        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name']]}}
+        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name'], arch]}}
         task = {'config': config, 'privileged': True, 'task': 'build'}
         plan = [{'aggregate': aggregates}, setup_ybd_task, task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
@@ -116,7 +116,7 @@ class SystemsParser():
             strata_paths = self.get_strata(yaml_stream)
             strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
             strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
-            jobs = [self.get_job_from_strata(x, system_name, args.system) for x in strata_yamls]
+            jobs = [self.get_job_from_strata(x, system_name, args.system, yaml_stream['arch']) for x in strata_yamls]
             jobs.append(self.get_system_job(system_name, strata_paths))
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
