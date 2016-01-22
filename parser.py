@@ -56,8 +56,7 @@ class SystemsParser():
 
     def get_strata(self, system_file):
         ''' Iterates through a system morphology and returns all the strata'''
-        morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
-        return ['%s/%s' % (morph_dir, strata['morph']) for strata in system_file['strata']]
+        return ['%s/%s' % (self.morph_dir, strata['morph']) for strata in system_file['strata']]
 
     def transform_prefix(self, repo):
         return 'baserock' if 'baserock' in repo else 'delta'
@@ -84,6 +83,13 @@ class SystemsParser():
         resource = {'name': x['name'], 'type': 'git', 'source': {'uri': 'http://git.baserock.org/git/%s/%s' % (self.transform_prefix(x['repo']), re.search(':(.*)', x['repo']).groups(1)[0]), 'branch': x.get('unpetrify-ref', 'master')}}
         return resource
 
+    def get_strata_paths(self, strata_path):
+        yaml = self.load_yaml_from_file(strata_path)
+        build_depends_paths = ['%s/%s' % (self.morph_dir, a['morph']) for a in yaml.get('build-depends',[])]
+        bdds = [a for b in [self.get_strata_paths(x) for x in build_depends_paths] for a in b]
+        x = list(set([strata_path]) | set(build_depends_paths) | set(bdds))
+        return x
+
     def main(self):
         strata_yamls = []
         parser = argparse.ArgumentParser(
@@ -92,13 +98,11 @@ class SystemsParser():
         args = parser.parse_args()
         system_name = os.path.splitext(os.path.basename(args.system))[0]
         yaml_stream = self.load_yaml_from_file(args.system)
+        self.morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
         if yaml_stream['kind'] == 'system':
             # Progress to parsing strata
-            strata_paths = self.get_strata(yaml_stream, args.system)
-            strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
-            morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
-            build_depends_paths = ['%s/%s' % (morph_dir, a['morph']) for b in [x.get('build-depends',[]) for x in strata_yamls] for a in b]
-            strata_paths = list(set(strata_paths) | set(build_depends_paths))
+            strata_paths = self.get_strata(yaml_stream)
+            strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
             strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
             jobs = [self.get_job_from_strata(x, system_name, args.system) for x in strata_yamls]
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
