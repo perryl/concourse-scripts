@@ -44,20 +44,18 @@ class YamlLoadError(Error):
 
 class SystemsParser():
 
-    def open_file(self, morphology):
-        '''Takes a file, ensure it is a system file and then open it'''
-        with open(morphology, 'r') as f:
+    def load_yaml_from_file(self, morph_file):
+        '''Loads the YAML from a given morphology.'''
+        with open(morph_file, 'r') as f:
             try:
-                yaml_stream = yaml.safe_load(f)
+                return yaml.safe_load(f)
             except:
-                raise YamlLoadError(morphology)
+                raise YamlLoadError(morph_file)
             if not isinstance(yaml_stream, dict):
-                raise InvalidFormatError(file_name)
-        return yaml_stream
+                raise InvalidFormatError(morph_file)
 
-    def get_strata(self, system_file, morphology):
-        ''' Iterates through a yaml stream and finds all the strata'''
-        # Iterate through the strata section of the system file
+    def get_strata(self, system_file):
+        ''' Iterates through a system morphology and returns all the strata'''
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         return ['%s/%s' % (morph_dir, strata['morph']) for strata in system_file['strata']]
 
@@ -71,7 +69,7 @@ class SystemsParser():
         definitions = {'get': 'definitions', 'resource': 'definitions', 'trigger': True}
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
-        build_depends = [self.open_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
+        build_depends = [self.load_yaml_from_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
@@ -93,15 +91,15 @@ class SystemsParser():
         parser.add_argument('--system', type=str)
         args = parser.parse_args()
         system_name = os.path.splitext(os.path.basename(args.system))[0]
-        yaml_stream = self.open_file(args.system)
+        yaml_stream = self.load_yaml_from_file(args.system)
         if yaml_stream['kind'] == 'system':
             # Progress to parsing strata
             strata_paths = self.get_strata(yaml_stream, args.system)
-            strata_yamls = [self.open_file(x) for x in strata_paths]
+            strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
             morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
             build_depends_paths = ['%s/%s' % (morph_dir, a['morph']) for b in [x.get('build-depends',[]) for x in strata_yamls] for a in b]
             strata_paths = list(set(strata_paths) | set(build_depends_paths))
-            strata_yamls = [self.open_file(x) for x in strata_paths]
+            strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
             jobs = [self.get_job_from_strata(x, system_name, args.system) for x in strata_yamls]
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
