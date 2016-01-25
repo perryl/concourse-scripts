@@ -94,11 +94,12 @@ class SystemsParser():
         x = list(set([strata_path]) | set(build_depends_paths) | set(bdds))
         return x
 
-    def get_system_job(self, system_name, final_stratum):
-        aggregates = [{'get': 'definitions', 'resource': 'definitions', 'trigger': True}, {'get': 'ybd', 'resource': 'ybd', 'trigger': True}]
+    def get_system_job(self, system_name, strata_paths):
+        passed_list = [os.path.splitext(os.path.basename(x))[0] for x in strata_paths]
+        aggregates = [{'get': 'definitions', 'resource': 'definitions', 'trigger': True, 'passed': passed_list}, {'get': 'ybd', 'resource': 'ybd', 'trigger': True}]
         config = {'inputs': [{'name': 'ybd'}, {'name': 'definitions'}], 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd.py', 'args': ['definitions/systems/%s.morph' % system_name]}}
         plan = {'aggregate': aggregates, 'privileged': True, 'config': config}
-        job = {'name': system_name, 'public': True, 'passed': final_stratum, 'plan': plan}
+        job = {'name': system_name, 'public': True, 'plan': [plan]}
         return job
 
     def main(self):
@@ -115,9 +116,8 @@ class SystemsParser():
             strata_paths = self.get_strata(yaml_stream)
             strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
             strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
-            final_stratum = os.path.splitext(os.path.basename(strata_paths[len(strata_paths) - 1]))[0]
             jobs = [self.get_job_from_strata(x, system_name, args.system) for x in strata_yamls]
-            jobs.append(self.get_system_job(system_name, final_stratum)) 
+            jobs.append(self.get_system_job(system_name, strata_paths))
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
