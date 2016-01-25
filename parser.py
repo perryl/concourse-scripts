@@ -45,15 +45,15 @@ class YamlLoadError(Error):
 
 class SystemsParser():
 
-    def load_yaml_from_file(self, morph_file):
+    def load_yaml_file(self, yaml_file):
         '''Loads the YAML from a given morphology.'''
-        with open(morph_file, 'r') as f:
+        with open(yaml_file, 'r') as f:
             try:
                 y = yaml.safe_load(f)
             except:
-                raise YamlLoadError(morph_file)
+                raise YamlLoadError(yaml_file)
             if not isinstance(y, dict):
-                raise InvalidFormatError(morph_file)
+                raise InvalidFormatError(yaml_file)
             return y
 
     def get_strata(self, system_file):
@@ -76,7 +76,7 @@ class SystemsParser():
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml', 'config': {'params': {'YBD_CACHE_SERVER': '{{ybd-cache-server}}', 'YBD_CACHE_PASSWORD' : '{{ybd-cache-password}}'}}}
-        build_depends = [self.load_yaml_from_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
+        build_depends = [self.load_yaml_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True, 'params': {'submodules': 'none'}} for x in strata['chunks']]
@@ -95,7 +95,7 @@ class SystemsParser():
         return resource
 
     def get_strata_paths(self, strata_path):
-        yaml = self.load_yaml_from_file(strata_path)
+        yaml = self.load_yaml_file(strata_path)
         build_depends_paths = ['%s/%s' % (self.morph_dir, a['morph']) for a in yaml.get('build-depends',[])]
         bdds = [a for b in [self.get_strata_paths(x) for x in build_depends_paths] for a in b]
         x = list(set([strata_path]) | set(build_depends_paths) | set(bdds))
@@ -116,25 +116,25 @@ class SystemsParser():
             sys.exit(1)
         system_file = sys.argv[1]
 
-        yaml_stream = self.load_yaml_from_file(system_file)
-        system_name = yaml_stream['name']
+        morphology = self.load_yaml_file(system_file)
+        system_name = morphology['name']
         self.morph_dir = re.sub('/systems', '', os.path.dirname(system_file))
-        if yaml_stream['kind'] == 'system':
-            arch = yaml_stream['arch']
+        if morphology['kind'] == 'system':
+            arch = morphology['arch']
             # Progress to parsing strata
-            strata_paths = self.get_strata(yaml_stream)
+            strata_paths = self.get_strata(morphology)
             strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
-            strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
+            strata_yamls = [self.load_yaml_file(x) for x in strata_paths]
             jobs = [self.get_job_from_strata(x, system_name, system_file, arch) for x in strata_yamls]
             jobs.append(self.get_system_job(system_name, strata_paths, arch))
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
-        if yaml_stream['kind'] == 'stratum':
+        if morphology['kind'] == 'stratum':
             arch = ''
-            jobs = [self.get_job_from_strata(yaml_stream, system_name, system_file, arch)]
-            resources = [self.get_resource_from_chunk(x) for x in yaml_stream['chunks']]
+            jobs = [self.get_job_from_strata(morphology, system_name, system_file, arch)]
+            resources = [self.get_resource_from_chunk(x) for x in morphology['chunks']]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
         else:
