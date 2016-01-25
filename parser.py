@@ -115,8 +115,8 @@ class SystemsParser():
                  description='Takes Baserock system morphology.')
         parser.add_argument('--system', type=str)
         args = parser.parse_args()
-        system_name = os.path.splitext(os.path.basename(args.system))[0]
         yaml_stream = self.load_yaml_from_file(args.system)
+        system_name = yaml_stream['name']
         self.morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
         if yaml_stream['kind'] == 'system':
             arch = yaml_stream['arch']
