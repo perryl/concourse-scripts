@@ -56,9 +56,25 @@ class SystemsParser():
                 raise InvalidFormatError(yaml_file)
             return y
 
-    def get_strata(self, system_file):
+    def get_all_strata(self, definitions_root, system_morph):
         ''' Iterates through a system morphology and returns all the strata'''
-        return ['%s/%s' % (self.morph_dir, strata['morph']) for strata in system_file['strata']]
+        system_strata = {stratum['morph']: self.load_yaml_file(os.path.join(
+                             definitions_root, stratum['morph']))
+                         for stratum in system_morph['strata']}
+
+        def get_depends(strata):
+            depends = {d['morph']: self.load_yaml_file(os.path.join(
+                           definitions_root, d['morph']))
+                       for d in strata.get("build-depends", [])
+                       if d['morph'] not in system_strata}
+
+            for d in depends.values():
+                get_depends(d)
+            system_strata.update(depends)
+
+        for strata in system_strata.values():
+            get_depends(strata)
+        return system_strata
 
     def transform_prefix(self, repo):
         return 'baserock' if 'baserock' in repo else 'delta'
@@ -76,7 +92,8 @@ class SystemsParser():
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml', 'config': {'params': {'YBD_CACHE_SERVER': '{{ybd-cache-server}}', 'YBD_CACHE_PASSWORD' : '{{ybd-cache-password}}'}}}
-        build_depends = [self.load_yaml_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
+        build_depends = [self.all_strata[x['morph']]['name']
+                         for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True, 'params': {'submodules': 'none'}} for x in strata['chunks']]
@@ -94,15 +111,8 @@ class SystemsParser():
         resource = {'name': x['name'], 'type': 'git', 'source': {'uri': 'http://git.baserock.org/git/%s/%s' % (self.transform_prefix(x['repo']), re.search(':(.*)', x['repo']).groups(1)[0]), 'branch': x.get('unpetrify-ref', 'master')}}
         return resource
 
-    def get_strata_paths(self, strata_path):
-        yaml = self.load_yaml_file(strata_path)
-        build_depends_paths = ['%s/%s' % (self.morph_dir, a['morph']) for a in yaml.get('build-depends',[])]
-        bdds = [a for b in [self.get_strata_paths(x) for x in build_depends_paths] for a in b]
-        x = list(set([strata_path]) | set(build_depends_paths) | set(bdds))
-        return x
-
-    def get_system_job(self, system_name, strata_paths, arch):
-        passed_list = [os.path.splitext(os.path.basename(x))[0] for x in strata_paths]
+    def get_system_job(self, system_name, strata, arch):
+        passed_list = [stratum['name'] for stratum in strata]
         aggregates = [{'get': 'definitions', 'resource': 'definitions', 'trigger': True, 'passed': passed_list}, {'get': 'ybd', 'resource': 'ybd', 'trigger': True}]
         config = {'inputs': [{'name': 'ybd'}, {'name': 'definitions'}], 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd.py', 'args': ['definitions/systems/%s.morph' % system_name, arch]}}
         plan = {'aggregate': aggregates, 'privileged': True, 'config': config}
@@ -110,24 +120,25 @@ class SystemsParser():
         return job
 
     def main(self):
-        strata_yamls = []
         if len(sys.argv) != 2:
             print "usage: %s SYSTEM_MORPHOLOGY" % os.path.basename(sys.argv[0])
             sys.exit(1)
         system_file = sys.argv[1]
+        definitions_root = os.path.dirname(os.path.dirname(system_file))
 
         morphology = self.load_yaml_file(system_file)
         system_name = morphology['name']
-        self.morph_dir = re.sub('/systems', '', os.path.dirname(system_file))
         if morphology['kind'] == 'system':
             arch = morphology['arch']
             # Progress to parsing strata
-            strata_paths = self.get_strata(morphology)
-            strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
-            strata_yamls = [self.load_yaml_file(x) for x in strata_paths]
-            jobs = [self.get_job_from_strata(x, system_name, system_file, arch) for x in strata_yamls]
-            jobs.append(self.get_system_job(system_name, strata_paths, arch))
-            resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
+            self.all_strata = self.get_all_strata(definitions_root, morphology)
+            jobs = [self.get_job_from_strata(x, system_name, system_file, arch)
+                    for x in self.all_strata.itervalues()]
+            jobs.append(self.get_system_job(
+                system_name, self.all_strata.itervalues(), arch))
+            resources_by_strata = [[self.get_resource_from_chunk(x)
+                                    for x in y['chunks']]
+                                   for y in self.all_strata.itervalues()]
             resources = [x for y in resources_by_strata for x in y]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
@@ -139,6 +150,7 @@ class SystemsParser():
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
         else:
             pass
+
         system = {'jobs': jobs, 'resources': resources}
         path = '%s/%s' % (os.getcwd(), system_name)
         if not os.path.isdir(path):
