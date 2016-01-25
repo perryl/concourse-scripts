@@ -83,14 +83,13 @@ class SystemsParser():
         for i in xrange(0, len(iterable), chunk_size):
             yield iterable[i:i+chunk_size]
 
-    def get_job_from_strata(self, strata, system_name, morphology, arch):
+    def get_job_from_strata(self, strata, arch):
         inputs = [{'name': x['name']} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
         inputs.append({'name': 'setupybd'})
         definitions = {'get': 'definitions', 'resource': 'definitions', 'trigger': True}
         ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
-        morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml', 'config': {'params': {'YBD_CACHE_SERVER': '{{ybd-cache-server}}', 'YBD_CACHE_PASSWORD' : '{{ybd-cache-password}}'}}}
         build_depends = [self.all_strata[x['morph']]['name']
                          for x in strata.get('build-depends', [])]
@@ -132,7 +131,7 @@ class SystemsParser():
             arch = morphology['arch']
             # Progress to parsing strata
             self.all_strata = self.get_all_strata(definitions_root, morphology)
-            jobs = [self.get_job_from_strata(x, system_name, system_file, arch)
+            jobs = [self.get_job_from_strata(x, arch)
                     for x in self.all_strata.itervalues()]
             jobs.append(self.get_system_job(
                 system_name, self.all_strata.itervalues(), arch))
