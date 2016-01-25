@@ -40,7 +40,7 @@ class YamlLoadError(Error):
 
     def __init__(self, morph_file):
         self.morph_file = morph_file
-        Error.__init__(self, 'Could not load file: %' % self.morph_file)
+        Error.__init__(self, 'Could not load file: %s' % self.morph_file)
 
 
 class SystemsParser():
