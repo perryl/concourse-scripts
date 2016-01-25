@@ -48,11 +48,12 @@ class SystemsParser():
         '''Loads the YAML from a given morphology.'''
         with open(morph_file, 'r') as f:
             try:
-                return yaml.safe_load(f)
+                y = yaml.safe_load(f)
             except:
                 raise YamlLoadError(morph_file)
-            if not isinstance(yaml_stream, dict):
+            if not isinstance(y, dict):
                 raise InvalidFormatError(morph_file)
+            return y
 
     def get_strata(self, system_file):
         ''' Iterates through a system morphology and returns all the strata'''
