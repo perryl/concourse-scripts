@@ -91,10 +91,10 @@ class SystemsParser():
         x = list(set([strata_path]) | set(build_depends_paths) | set(bdds))
         return x
 
-    def get_system_job(self, system_name, strata_paths):
+    def get_system_job(self, system_name, strata_paths, arch):
         passed_list = [os.path.splitext(os.path.basename(x))[0] for x in strata_paths]
         aggregates = [{'get': 'definitions', 'resource': 'definitions', 'trigger': True, 'passed': passed_list}, {'get': 'ybd', 'resource': 'ybd', 'trigger': True}]
-        config = {'inputs': [{'name': 'ybd'}, {'name': 'definitions'}], 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd.py', 'args': ['definitions/systems/%s.morph' % system_name]}}
+        config = {'inputs': [{'name': 'ybd'}, {'name': 'definitions'}], 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './ybd/ybd.py', 'args': ['definitions/systems/%s.morph' % system_name, arch]}}
         plan = {'aggregate': aggregates, 'privileged': True, 'config': config}
         job = {'name': system_name, 'public': True, 'plan': [plan]}
         return job
@@ -107,14 +107,15 @@ class SystemsParser():
         args = parser.parse_args()
         system_name = os.path.splitext(os.path.basename(args.system))[0]
         yaml_stream = self.load_yaml_from_file(args.system)
+        arch = yaml_stream['arch']
         self.morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
         if yaml_stream['kind'] == 'system':
             # Progress to parsing strata
             strata_paths = self.get_strata(yaml_stream)
             strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
             strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
-            jobs = [self.get_job_from_strata(x, system_name, args.system, yaml_stream['arch']) for x in strata_yamls]
-            jobs.append(self.get_system_job(system_name, strata_paths))
+            jobs = [self.get_job_from_strata(x, system_name, args.system, arch) for x in strata_yamls]
+            jobs.append(self.get_system_job(system_name, strata_paths, arch))
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
