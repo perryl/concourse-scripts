@@ -17,7 +17,7 @@
 # =*= License: GPL-2 =*=
 
 
-import argparse
+import sys
 import yaml
 import os
 import re
@@ -111,20 +111,21 @@ class SystemsParser():
 
     def main(self):
         strata_yamls = []
-        parser = argparse.ArgumentParser(
-                 description='Takes Baserock system morphology.')
-        parser.add_argument('--system', type=str)
-        args = parser.parse_args()
-        yaml_stream = self.load_yaml_from_file(args.system)
+        if len(sys.argv) != 2:
+            print "usage: %s SYSTEM_MORPHOLOGY" % os.path.basename(sys.argv[0])
+            sys.exit(1)
+        system_file = sys.argv[1]
+
+        yaml_stream = self.load_yaml_from_file(system_file)
         system_name = yaml_stream['name']
-        self.morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
+        self.morph_dir = re.sub('/systems', '', os.path.dirname(system_file))
         if yaml_stream['kind'] == 'system':
             arch = yaml_stream['arch']
             # Progress to parsing strata
             strata_paths = self.get_strata(yaml_stream)
             strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
             strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
-            jobs = [self.get_job_from_strata(x, system_name, args.system, arch) for x in strata_yamls]
+            jobs = [self.get_job_from_strata(x, system_name, system_file, arch) for x in strata_yamls]
             jobs.append(self.get_system_job(system_name, strata_paths, arch))
             resources_by_strata = [[self.get_resource_from_chunk(x) for x in y['chunks']] for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
@@ -132,7 +133,7 @@ class SystemsParser():
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
         if yaml_stream['kind'] == 'stratum':
             arch = ''
-            jobs = [self.get_job_from_strata(yaml_stream, system_name, args.system, arch)]
+            jobs = [self.get_job_from_strata(yaml_stream, system_name, system_file, arch)]
             resources = [self.get_resource_from_chunk(x) for x in yaml_stream['chunks']]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
