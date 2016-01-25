@@ -110,6 +110,11 @@ class SystemsParser():
             resources = [x for y in resources_by_strata for x in y]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
+        if yaml_stream['kind'] == 'stratum':
+            jobs = [self.get_job_from_strata(yaml_stream, system_name, args.system)]
+            resources = [self.get_resource_from_chunk(x) for x in yaml_stream['chunks']]
+            resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
+            resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
         else:
             pass
         system = {'jobs': jobs, 'resources': resources}
