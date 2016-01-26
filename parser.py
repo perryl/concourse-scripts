@@ -21,6 +21,7 @@ import argparse
 import yaml
 import os
 import re
+import multiprocessing
 from collections import OrderedDict
 
 
@@ -74,9 +75,19 @@ class SystemsParser():
         build_depends = [self.load_yaml_from_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
-        aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
-        aggregates.append(definitions)
-        aggregates.append(ybd)
+        cores = multiprocessing.cpu_count()
+        aggregates = []
+        aggregates_part = []
+        for x in strata['chunks']:
+            if len(aggregates_part) < cores:
+                aggregates_part.append({'get': x['name'], 'resource': x['name'], 'trigger': True})
+            if len(aggregates_part) == cores:
+                aggregates.append({'do': aggregates_part})
+                del aggregates_part[:]
+            else:
+                pass
+        aggregates.append({'do': aggregates_part}) # Catches final aggregates if size less than CPUs
+        aggregates.append({'do': [ybd, definitions]})
         config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name'], arch]}}
         task = {'config': config, 'privileged': True, 'task': 'build'}
         plan = [{'aggregate': aggregates}, setup_ybd_task, task]
