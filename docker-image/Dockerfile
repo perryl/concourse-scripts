@@ -6,4 +6,9 @@ RUN apt-get update && \
 
 RUN  wget https://bootstrap.pypa.io/get-pip.py && \
   python get-pip.py
-RUN pip install pyyaml sandboxlib jsonschema bottle cherrypy requests
+RUN pip install pyyaml jsonschema bottle cherrypy requests
+RUN git clone http://github.com/CodethinkLabs/sandboxlib sandboxlib
+WORKDIR sandboxlib
+RUN python ./setup.py install
+WORKDIR $HOME
+RUN rm -r sandboxlib
