@@ -110,9 +110,9 @@ class SystemsParser():
         args = parser.parse_args()
         system_name = os.path.splitext(os.path.basename(args.system))[0]
         yaml_stream = self.load_yaml_from_file(args.system)
-        arch = yaml_stream['arch']
         self.morph_dir = re.sub('/systems', '', os.path.dirname(args.system))
         if yaml_stream['kind'] == 'system':
+            arch = yaml_stream['arch']
             # Progress to parsing strata
             strata_paths = self.get_strata(yaml_stream)
             strata_paths = list(set([a for b in [self.get_strata_paths(x) for x in strata_paths] for a in b]))
@@ -124,7 +124,8 @@ class SystemsParser():
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
         if yaml_stream['kind'] == 'stratum':
-            jobs = [self.get_job_from_strata(yaml_stream, system_name, args.system)]
+            arch = ''
+            jobs = [self.get_job_from_strata(yaml_stream, system_name, args.system, arch)]
             resources = [self.get_resource_from_chunk(x) for x in yaml_stream['chunks']]
             resources.append({'name': 'definitions', 'type': 'git', 'source': {'uri': 'git://git.baserock.org/baserock/baserock/definitions.git', 'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source': {'uri': 'http://github.com/locallycompact/ybd', 'branch': 'master'}})
