@@ -1,0 +1,62 @@
+resources:
+- name: scripts
+  type: git
+  source:
+    uri: http://github.com/perryl/concourse-scripts
+    branch: master
+
+- name: definitions
+  type: git
+  source:
+    uri: http://git.baserock.org/git/baserock/baserock/definitions
+    branch: master
+
+jobs:
+- name: check
+  plan:
+  - aggregate:
+    - get: scripts
+      trigger: true
+    - get: definitions
+      trigger: true
+  - task: parser
+    config:
+      platform: linux
+      image: "docker:///perryl/perryl-concourse#latest"
+      inputs:
+        - name: scripts
+        - name: definitions
+      params:
+        SYSTEM_MORPH: {{system-morph}}
+        CONCOURSE_URL: {{concourse-url}}
+        USERNAME: {{username}}
+        PASSWORD: {{password}}
+        YBD_CACHE_SERVER: {{ybd-cache-server}}
+        YBD_CACHE_PASSWORD: {{ybd-cache-password}}
+      run:
+        path: sh
+        args:
+          - -c
+          - |
+            set -e
+
+            cwd="$(pwd)"
+
+            cd scripts
+
+            wget --quiet -O fly \
+                "$CONCOURSE_URL/api/v1/cli?arch=amd64&platform=linux"
+            chmod +x fly
+            export PATH="$PATH":"$(pwd)"
+
+            if [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
+                additional_args="-u $USERNAME -p $PASSWORD"
+            fi
+
+            ./parser.py --system "$cwd"/definitions/systems/"$SYSTEM_MORPH"
+            fly -t concourse login -c "$CONCOURSE_URL" "$additional_args"
+            system="$(basename "$SYSTEM_MORPH" ".morph")"
+            yes | fly -t concourse set-pipeline -p "$system" \
+                -c "$system"/"$system".yml \
+                --var "ybd-cache-server=$YBD_CACHE_SERVER" \
+                --var "ybd-cache-password=$YBD_CACHE_PASSWORD"
