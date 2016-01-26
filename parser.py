@@ -21,6 +21,7 @@ import argparse
 import yaml
 import os
 import re
+import multiprocessing
 from collections import OrderedDict
 
 
@@ -62,6 +63,10 @@ class SystemsParser():
     def transform_prefix(self, repo):
         return 'baserock' if 'baserock' in repo else 'delta'
 
+    def split_iterable(self, iterable, chunk_size):
+        for i in xrange(0, len(iterable), chunk_size):
+            yield iterable[i:i+chunk_size]
+
     def get_job_from_strata(self, strata, system_name, morphology, arch):
         inputs = [{'name': x['name']} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
@@ -77,9 +82,11 @@ class SystemsParser():
         aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
         aggregates.append(definitions)
         aggregates.append(ybd)
+        cores = multiprocessing.cpu_count()
+        aggregates_split = [{'aggregate': i} for i in self.split_iterable(aggregates, cores)]
         config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name'], arch]}}
         task = {'config': config, 'privileged': True, 'task': 'build'}
-        plan = [{'aggregate': aggregates}, setup_ybd_task, task]
+        plan = aggregates_split + [setup_ybd_task, task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
         return job
 
