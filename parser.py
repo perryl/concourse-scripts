@@ -84,7 +84,7 @@ class SystemsParser():
         aggregates.append(ybd)
         cores = multiprocessing.cpu_count()
         aggregates_split = [{'aggregate': i} for i in self.split_iterable(aggregates, cores)]
-        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///perryl/perryl-concourse#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name'], arch]}}
+        config = {'inputs': inputs, 'platform': 'linux', 'image': 'docker:///benbrown/sandboxlib#latest', 'run': {'path': './setupybd/ybd/ybd.py', 'args': ['definitions/strata/%s.morph' % strata['name'], arch]}}
         task = {'config': config, 'privileged': True, 'task': 'build'}
         plan = aggregates_split + [setup_ybd_task, task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
