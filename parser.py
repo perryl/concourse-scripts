@@ -79,7 +79,7 @@ class SystemsParser():
         build_depends = [self.load_yaml_from_file('%s/%s' % (morph_dir, x['morph']))['name'] for x in strata.get('build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
-        aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True} for x in strata['chunks']]
+        aggregates = [{'get': x['name'], 'resource': x['name'], 'trigger': True, 'params': {'submodules': 'none'}} for x in strata['chunks']]
         aggregates.append(definitions)
         aggregates.append(ybd)
         cores = multiprocessing.cpu_count()
