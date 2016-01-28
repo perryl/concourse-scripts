@@ -80,8 +80,8 @@ class SystemsParser():
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml',
                           'config': {'params': {
-                            'YBD_CACHE_SERVER': '{{ybd-cache-server}}',
-                            'YBD_CACHE_PASSWORD': '{{ybd-cache-password}}'}}}
+                              'YBD_CACHE_SERVER': '{{ybd-cache-server}}',
+                              'YBD_CACHE_PASSWORD': '{{ybd-cache-password}}'}}}
         build_depends = [self.load_yaml_from_file('%s/%s' % (
                          morph_dir, x['morph']))['name'] for x in strata.get(
                          'build-depends', [])]
@@ -94,7 +94,7 @@ class SystemsParser():
         aggregates.append(ybd)
         cores = multiprocessing.cpu_count()
         aggregates_split = [{'aggregate': i} for i in self.split_iterable(
-                                aggregates, cores)]
+            aggregates, cores)]
         config = {'inputs': inputs, 'platform': 'linux', 'image':
                   'docker:///benbrown/sandboxlib#latest',
                   'run': {'path': './setupybd/ybd/ybd.py', 'args': [
@@ -141,7 +141,7 @@ class SystemsParser():
     def main(self):
         strata_yamls = []
         parser = argparse.ArgumentParser(
-                 description='Takes Baserock system morphology.')
+            description='Takes Baserock system morphology.')
         parser.add_argument('--system', type=str)
         args = parser.parse_args()
         yaml_stream = self.load_yaml_from_file(args.system)
@@ -151,9 +151,8 @@ class SystemsParser():
             arch = yaml_stream['arch']
             # Progress to parsing strata
             strata_paths = self.get_strata(yaml_stream)
-            strata_paths = list(set([a for b in [
-                           self.get_strata_paths(x) for x in strata_paths]
-                           for a in b]))
+            strata_paths = list(set([a for b in [self.get_strata_paths(x)
+                                for x in strata_paths] for a in b]))
             strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
             jobs = [self.get_job_from_strata(x, system_name, args.system, arch)
                     for x in strata_yamls]
@@ -198,4 +197,3 @@ class SystemsParser():
 
 if __name__ == "__main__":
     SystemsParser().main()
-
