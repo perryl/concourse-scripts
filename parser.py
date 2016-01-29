@@ -16,7 +16,7 @@
 #
 # =*= License: GPL-2 =*=
 
-
+import string
 import argparse
 import yaml
 import os
@@ -24,6 +24,14 @@ import re
 import multiprocessing
 from collections import OrderedDict
 
+
+aliases = {
+  'baserock:': 'git://git.baserock.org/baserock/',
+  'freedesktop:': 'git://anongit.freedesktop.org/',
+  'github:': 'git://github.com/',
+  'gnome:': 'git://git.gnome.org/',
+  'upstream:': 'git://git.baserock.org/delta/'
+}
 
 class Error(Exception):
     pass
@@ -44,6 +52,24 @@ class YamlLoadError(Error):
 
 
 class SystemsParser():
+
+    def get_repo_url(self, repo):
+        for alias, url in aliases.items():
+            repo = repo.replace(alias, url)
+        if repo.endswith('.git'):
+            repo = repo[:-4]
+        return repo
+
+
+    def get_repo_name(self, repo):
+        ''' Convert URIs to strings that only contain digits, letters, _ and %.
+
+        NOTE: this naming scheme is based on what lorry uses
+
+        '''
+        valid_chars = string.digits + string.ascii_letters + '%_'
+        transl = lambda x: x if x in valid_chars else '_'
+        return ''.join([transl(x) for x in self.get_repo_url(repo)])
 
     def load_yaml_from_file(self, morph_file):
         '''Loads the YAML from a given morphology.'''
@@ -70,7 +96,7 @@ class SystemsParser():
             yield iterable[i:i+chunk_size]
 
     def get_job_from_strata(self, strata, system_name, morphology, arch):
-        inputs = [{'name': x['name']} for x in strata['chunks']]
+        inputs = [{'name': x['name'], 'path': self.get_repo_name(x['repo'])} for x in strata['chunks']]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
         inputs.append({'name': 'setupybd'})
