@@ -132,7 +132,7 @@ class SystemsParser():
                       {'get': 'ybd', 'resource': 'ybd'}]
         config = {'inputs': [{'name': 'ybd'}, {'name': 'definitions'}],
                   'platform': 'linux',
-                  'image': 'docker:///perryl/perryl-concourse#latest',
+                  'image': 'docker:///benbrown/sandboxlib#latest',
                   'run': {'path': './ybd/ybd.py', 'args': [
                       'definitions/systems/%s.morph' % system_name, arch]}}
         plan = {'aggregate': aggregates, 'privileged': True, 'config': config}
@@ -167,8 +167,8 @@ class SystemsParser():
                     'git://git.baserock.org/baserock/baserock/definitions.git',
                     'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source':
-                             {'uri': 'https://github.com/mwilliams-ct/ybd',
-                              'branch': 'mwilliams/concourse-usecase'}})
+                             {'uri': 'https://github.com/locallycompact/ybd',
+                              'branch': 'benbrown/fix-the-things'}})
         if yaml_stream['kind'] == 'stratum':
             arch = ''
             jobs = [self.get_job_from_strata(yaml_stream, system_name,
