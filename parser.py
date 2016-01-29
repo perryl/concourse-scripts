@@ -97,8 +97,8 @@ class SystemsParser():
             aggregates, cores)]
         config = {'inputs': inputs, 'platform': 'linux', 'image':
                   'docker:///benbrown/sandboxlib#latest',
-                  'run': {'path': './setupybd/ybd/ybd.py', 'args': [
-                      'definitions/strata/%s.morph' % strata['name'], arch]}}
+                  'run': {'path': 'sh', 'args': ['-c',
+                                                 '|\npwd\n./setupybd/ybd/ybd.py definitions/strata/%s.morph %s' % (strata['name'], arch)]}}
         task = {'config': config, 'privileged': True, 'task': 'build'}
         plan = aggregates_split + [setup_ybd_task, task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
