@@ -105,11 +105,12 @@ class SystemsParser():
         return job
 
     def get_resource_from_chunk(self, x):
-        resource = {'name': x['name'], 'type': 'git', 'source': {
-                    'uri': 'http://git.baserock.org/git/%s/%s' % (
-                        self.transform_prefix(x['repo']), re.search(
-                            ':(.*)', x['repo']).groups(1)[0]),
-                    'branch': x.get('unpetrify-ref', 'master')}}
+        resource = {'name': x['name'], 'type': 'git', 'check_every': '15m',
+                    'source': {
+                        'uri': 'http://git.baserock.org/git/%s/%s' % (
+                            self.transform_prefix(x['repo']), re.search(
+                                ':(.*)', x['repo']).groups(1)[0]),
+                        'branch': x.get('unpetrify-ref', 'master')}}
         return resource
 
     def get_strata_paths(self, strata_path):
@@ -161,10 +162,10 @@ class SystemsParser():
                 self.get_resource_from_chunk(x) for x in y['chunks']]
                 for y in strata_yamls]
             resources = [x for y in resources_by_strata for x in y]
-            resources.append({'name': 'definitions', 'type': 'git', 'source':
-                             {'uri': 'git://git.baserock.org/baserock/'
-                              'baserock/definitions.git',
-                              'branch': 'master'}})
+            resources.append({'name': 'definitions', 'type': 'git',
+                'check_every': '15m', 'source': {'uri':
+                    'git://git.baserock.org/baserock/baserock/definitions.git',
+                    'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source':
                              {'uri': 'https://github.com/mwilliams-ct/ybd',
                               'branch': 'mwilliams/concourse-usecase'}})
