@@ -76,7 +76,7 @@ class SystemsParser():
         inputs.append({'name': 'setupybd'})
         definitions = {'get': 'definitions', 'resource': 'definitions',
                        'trigger': True}
-        ybd = {'get': 'ybd', 'resource': 'ybd', 'trigger': True}
+        ybd = {'get': 'ybd', 'resource': 'ybd'}
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml',
                           'config': {'params': {
@@ -88,8 +88,8 @@ class SystemsParser():
         if build_depends:
             definitions.update({'passed': build_depends})
         aggregates = [{'get': x['name'], 'resource': x['name'],
-                       'trigger': True, 'params': {
-                           'submodules': 'none'}} for x in strata['chunks']]
+                       'params': {'submodules': 'none'}}
+                      for x in strata['chunks']]
         aggregates.append(definitions)
         aggregates.append(ybd)
         cores = multiprocessing.cpu_count()
@@ -127,8 +127,8 @@ class SystemsParser():
         passed_list = [os.path.splitext(
                        os.path.basename(x))[0] for x in strata_paths]
         aggregates = [{'get': 'definitions', 'resource': 'definitions',
-                       'trigger': True, 'passed': passed_list}, {
-                           'get': 'ybd', 'resource': 'ybd', 'trigger': True}]
+                       'trigger': True, 'passed': passed_list},
+                      {'get': 'ybd', 'resource': 'ybd'}]
         config = {'inputs': [{'name': 'ybd'}, {'name': 'definitions'}],
                   'platform': 'linux',
                   'image': 'docker:///perryl/perryl-concourse#latest',
