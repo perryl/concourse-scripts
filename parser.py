@@ -196,7 +196,7 @@ class SystemsParser():
                     'branch': 'master'}})
             resources.append({'name': 'ybd', 'type': 'git', 'source':
                              {'uri': 'https://github.com/locallycompact/ybd',
-                              'branch': 'benbrown/fix-the-things'}})
+                              'branch': 'benbrown/concourse-fetch'}})
         if yaml_stream['kind'] == 'stratum':
             arch = ''
             jobs = [self.get_job_from_strata(yaml_stream, system_name,
