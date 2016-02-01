@@ -121,10 +121,12 @@ class SystemsParser():
         cores = multiprocessing.cpu_count()
         aggregates_split = [{'aggregate': i} for i in self.split_iterable(
             aggregates, cores)]
+        sh_args = ['-c', 'echo "gits: $(pwd)" >> setupybd/ybd/ybd.conf; '
+                   './setupybd/ybd/ybd.py definitions/strata/%s.morph %s' %
+                   (strata['name'], arch)]
         config = {'inputs': inputs, 'platform': 'linux', 'image':
                   'docker:///benbrown/sandboxlib#latest',
-                  'run': {'path': 'sh', 'args': ['-c',
-                                                 '|\npwd\n./setupybd/ybd/ybd.py definitions/strata/%s.morph %s' % (strata['name'], arch)]}}
+                  'run': {'path': 'sh', 'args': sh_args}}
         task = {'config': config, 'privileged': True, 'task': 'build'}
         plan = aggregates_split + [setup_ybd_task, task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
