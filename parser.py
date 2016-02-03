@@ -95,8 +95,11 @@ class SystemsParser():
         for i in xrange(0, len(iterable), chunk_size):
             yield iterable[i:i+chunk_size]
 
-    def get_job_from_strata(self, strata, system_name, morphology, arch):
-        inputs = [{'name': x['name'], 'path': self.get_repo_name(x['repo'])} for x in strata['chunks']]
+    def get_job_from_strata(self, strata, morphology, arch, resources):
+        repos = set(x['repo'] for x in strata['chunks'])
+        inputs = [{'name': resources[repo]['name'],
+                   'path': self.get_repo_name(repo)}
+                  for repo in repos]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
         inputs.append({'name': 'setupybd'})
@@ -113,9 +116,9 @@ class SystemsParser():
                          'build-depends', [])]
         if build_depends:
             definitions.update({'passed': build_depends})
-        aggregates = [{'get': x['name'], 'resource': x['name'],
+        aggregates = [{'get': resources[repo]['name'],
                        'params': {'submodules': 'none'}}
-                      for x in strata['chunks']]
+                      for repo in repos]
         aggregates.append(definitions)
         aggregates.append(ybd)
         cores = multiprocessing.cpu_count()
@@ -132,14 +135,18 @@ class SystemsParser():
         job = {'name': strata['name'], 'public': True, 'plan': plan}
         return job
 
-    def get_resource_from_chunk(self, x):
-        resource = {'name': x['name'], 'type': 'git', 'check_every': '15m',
-                    'source': {
-                        'uri': 'http://git.baserock.org/git/%s/%s' % (
-                            self.transform_prefix(x['repo']), re.search(
-                                ':(.*)', x['repo']).groups(1)[0]),
-                        'branch': x.get('unpetrify-ref', 'master')}}
-        return resource
+    def get_strata_resources(self, all_strata):
+        all_chunks = (c for stratum in all_strata
+                      for c in stratum['chunks'])
+        resources = {}
+        for chunk in all_chunks:
+            name = os.path.basename(chunk['repo'].rsplit(":", 1)[1])
+            resources[chunk['repo']] = {
+                'name': name, 'type': 'git', 'check_every': '15m',
+                'source': {
+                    'uri': self.get_repo_url(chunk['repo']),
+                    'branch': chunk.get('unpetrify-ref', 'master')}}
+        return resources
 
     def get_strata_paths(self, strata_path):
         yaml = self.load_yaml_from_file(strata_path)
@@ -183,35 +190,25 @@ class SystemsParser():
             strata_paths = list(set([a for b in [self.get_strata_paths(x)
                                 for x in strata_paths] for a in b]))
             strata_yamls = [self.load_yaml_from_file(x) for x in strata_paths]
-            jobs = [self.get_job_from_strata(x, system_name, args.system, arch)
-                    for x in strata_yamls]
-            jobs.append(self.get_system_job(system_name, strata_paths, arch))
-            resources_by_strata = [[
-                self.get_resource_from_chunk(x) for x in y['chunks']]
-                for y in strata_yamls]
-            resources = [x for y in resources_by_strata for x in y]
-            resources.append({'name': 'definitions', 'type': 'git',
-                'check_every': '15m', 'source': {'uri':
-                    'git://git.baserock.org/baserock/baserock/definitions.git',
-                    'branch': 'master'}})
-            resources.append({'name': 'ybd', 'type': 'git', 'source':
-                             {'uri': 'https://github.com/locallycompact/ybd',
-                              'branch': 'benbrown/concourse-fetch'}})
         if yaml_stream['kind'] == 'stratum':
             arch = ''
-            jobs = [self.get_job_from_strata(yaml_stream, system_name,
-                                             args.system, arch)]
-            resources = [self.get_resource_from_chunk(x)
-                         for x in yaml_stream['chunks']]
-            resources.append({'name': 'definitions', 'type': 'git', 'source':
-                             {'uri': 'git://git.baserock.org/baserock/'
-                              'baserock/definitions.git',
-                              'branch': 'master'}})
-            resources.append({'name': 'ybd', 'type': 'git', 'source':
-                             {'uri': 'https://github.com/mwilliams-ct/ybd',
-                              'branch': 'mwilliams/concourse-usecase'}})
-        else:
-            pass
+            strata_yamls = [yaml_stream]
+
+        resources_by_name = self.get_strata_resources(strata_yamls)
+        resources = resources_by_name.values()
+        resources.append({'name': 'definitions', 'type': 'git',
+            'check_every': '15m', 'source': {'uri':
+                'git://git.baserock.org/baserock/baserock/definitions.git',
+                'branch': 'master'}})
+        resources.append({'name': 'ybd', 'type': 'git', 'source':
+                          {'uri': 'https://github.com/locallycompact/ybd',
+                           'branch': 'benbrown/revert-for-green'}})
+        jobs = [self.get_job_from_strata(
+                    x, args.system, arch, resources_by_name)
+                for x in strata_yamls]
+        if yaml_stream['kind'] == "stratum":
+            jobs.append(self.get_system_job(system_name, strata_paths, arch))
+
         system = {'jobs': jobs, 'resources': resources}
         path = '%s/%s' % (os.getcwd(), system_name)
         if not os.path.isdir(path):
