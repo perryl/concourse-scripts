@@ -199,7 +199,7 @@ class SystemsParser():
                 'branch': 'master'}})
         resources.append({'name': 'ybd', 'type': 'git', 'source':
                           {'uri': 'https://github.com/locallycompact/ybd',
-                           'branch': 'benbrown/revert-for-green'}})
+                           'branch': 'benbrown/concourse-fetch'}})
         jobs = [self.get_job_from_strata(
                     x, args.system, arch, resources_by_name)
                 for x in strata_yamls]
