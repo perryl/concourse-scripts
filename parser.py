@@ -88,9 +88,6 @@ class SystemsParser():
                 self.morph_dir,
                 strata['morph']) for strata in system_file['strata']]
 
-    def transform_prefix(self, repo):
-        return 'baserock' if 'baserock' in repo else 'delta'
-
     def split_iterable(self, iterable, chunk_size):
         for i in xrange(0, len(iterable), chunk_size):
             yield iterable[i:i+chunk_size]
