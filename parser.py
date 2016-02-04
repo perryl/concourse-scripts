@@ -216,7 +216,10 @@ class SystemsParser():
         file_out = '%s/%s.yml' % (path, system_name)
         with open(file_out, 'w') as f:
             stream = yaml.dump(system, default_flow_style=False)
-            f.write(stream.replace("'", ""))
+            f.write(stream.replace("'{{ybd-cache-password}}'",
+                                   "{{ybd-cache-password}}")
+                          .replace("'{{ybd-cache-server}}'",
+                                   "{{ybd-cache-server}}"))
 
 if __name__ == "__main__":
     SystemsParser().main()
