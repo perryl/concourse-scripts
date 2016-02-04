@@ -203,7 +203,7 @@ class SystemsParser():
         jobs = [self.get_job_from_strata(
                     x, args.system, arch, resources_by_name)
                 for x in strata_yamls]
-        if yaml_stream['kind'] == "stratum":
+        if yaml_stream['kind'] == "system":
             jobs.append(self.get_system_job(system_name, strata_paths, arch))
 
         system = {'jobs': jobs, 'resources': resources}
