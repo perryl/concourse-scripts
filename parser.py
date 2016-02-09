@@ -156,9 +156,8 @@ class SystemsParser():
         x = list(set([strata_path]) | set(build_depends_paths) | set(bdds))
         return x
 
-    def get_system_job(self, system_name, strata_paths, arch):
-        passed_list = [os.path.splitext(
-                       os.path.basename(x))[0] for x in strata_paths]
+    def get_system_job(self, system, arch):
+        passed_list = [x['name'] for x in system['strata']]
         aggregates = [{'get': 'definitions', 'resource': 'definitions',
                        'trigger': True, 'passed': passed_list},
                       {'get': 'ybd', 'resource': 'ybd'}]
@@ -166,9 +165,9 @@ class SystemsParser():
                   'platform': 'linux',
                   'image': 'docker:///benbrown/sandboxlib#latest',
                   'run': {'path': './ybd/ybd.py', 'args': [
-                      'definitions/systems/%s.morph' % system_name, arch]}}
+                      'definitions/systems/%s.morph' % system['name'], arch]}}
         plan = {'aggregate': aggregates, 'privileged': True, 'config': config}
-        job = {'name': system_name, 'public': True, 'plan': [plan]}
+        job = {'name': system['name'], 'public': True, 'plan': [plan]}
         return job
 
     def main(self):
@@ -204,7 +203,7 @@ class SystemsParser():
                     x, args.system, arch, resources_by_name)
                 for x in strata_yamls]
         if yaml_stream['kind'] == "system":
-            jobs.append(self.get_system_job(system_name, strata_paths, arch))
+            jobs.append(self.get_system_job(yaml_stream, arch))
 
         system = {'jobs': jobs, 'resources': resources}
         path = '%s/%s' % (os.getcwd(), system_name)
