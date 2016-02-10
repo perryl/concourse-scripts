@@ -25,6 +25,7 @@ import multiprocessing
 from collections import OrderedDict
 
 
+docker_image = "docker:///benbrown/sandboxlib#latest"
 aliases = {
   'baserock:': 'git://git.baserock.org/baserock/',
   'freedesktop:': 'git://anongit.freedesktop.org/',
@@ -92,6 +93,18 @@ class SystemsParser():
         for i in xrange(0, len(iterable), chunk_size):
             yield iterable[i:i+chunk_size]
 
+    def get_ybd_task(self, inputs, ybd_args):
+        sh_args = ['-c', 'echo "kbas-url: $YBD_CACHE_SERVER" >> ybd/ybd.conf; '
+                   'echo "kbas-password: $YBD_CACHE_PASSWORD" >> ybd/ybd.conf; '
+                   'echo "gits: $(pwd)" >> ybd/ybd.conf; '
+                   './ybd/ybd.py %s' % ybd_args]
+        return {'task': 'build', 'privileged': True, 'config':{
+                    'platform': 'linux', 'image': docker_image,
+                    'inputs': inputs, 'params': {
+                        'YBD_CACHE_SERVER': '{{ybd-cache-server}}',
+                        'YBD_CACHE_PASSWORD': '{{ybd-cache-password}}'
+                    }, 'run': {'path': 'sh', 'args': sh_args}}}
+
     def get_job_from_strata(self, strata, morphology, arch, resources):
         repos = set(x['repo'] for x in strata['chunks'])
         inputs = [{'name': resources[repo]['name'],
@@ -99,15 +112,10 @@ class SystemsParser():
                   for repo in repos]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
-        inputs.append({'name': 'setupybd'})
         definitions = {'get': 'definitions', 'resource': 'definitions',
                        'trigger': True}
         ybd = {'get': 'ybd', 'resource': 'ybd'}
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
-        setup_ybd_task = {'task': 'setupybd', 'file': 'ybd/ci/setup.yml',
-                          'config': {'params': {
-                              'YBD_CACHE_SERVER': '{{ybd-cache-server}}',
-                              'YBD_CACHE_PASSWORD': '{{ybd-cache-password}}'}}}
         build_depends = [self.load_yaml_from_file('%s/%s' % (
                          morph_dir, x['morph']))['name'] for x in strata.get(
                          'build-depends', [])]
@@ -121,14 +129,9 @@ class SystemsParser():
         cores = multiprocessing.cpu_count()
         aggregates_split = [{'aggregate': i} for i in self.split_iterable(
             aggregates, cores)]
-        sh_args = ['-c', 'echo "gits: $(pwd)" >> setupybd/ybd/ybd.conf; '
-                   './setupybd/ybd/ybd.py definitions/strata/%s.morph %s' %
-                   (strata['name'], arch)]
-        config = {'inputs': inputs, 'platform': 'linux', 'image':
-                  'docker:///benbrown/sandboxlib#latest',
-                  'run': {'path': 'sh', 'args': sh_args}}
-        task = {'config': config, 'privileged': True, 'task': 'build'}
-        plan = aggregates_split + [setup_ybd_task, task]
+        task = self.get_ybd_task(inputs, "definitions/strata/%s.morph %s" %
+                                 (strata['name'], arch))
+        plan = aggregates_split + [task]
         job = {'name': strata['name'], 'public': True, 'plan': plan}
         return job
 
@@ -161,13 +164,11 @@ class SystemsParser():
         aggregates = [{'get': 'definitions', 'resource': 'definitions',
                        'trigger': True, 'passed': passed_list},
                       {'get': 'ybd', 'resource': 'ybd'}]
-        config = {'inputs': [{'name': 'ybd'}, {'name': 'definitions'}],
-                  'platform': 'linux',
-                  'image': 'docker:///benbrown/sandboxlib#latest',
-                  'run': {'path': './ybd/ybd.py', 'args': [
-                      'definitions/systems/%s.morph' % system['name'], arch]}}
-        plan = {'aggregate': aggregates, 'privileged': True, 'config': config}
-        job = {'name': system['name'], 'public': True, 'plan': [plan]}
+        inputs = [{'name': 'definitions'}, {'name': 'ybd'}]
+        task = self.get_ybd_task(inputs, "definitions/systems/%s.morph %s" %
+                                 (system['name'], arch))
+        plan = [{'aggregate': aggregates}, task]
+        job = {'name': system['name'], 'public': True, 'plan': plan}
         return job
 
     def main(self):
