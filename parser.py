@@ -142,10 +142,9 @@ class SystemsParser():
         for chunk in all_chunks:
             name = os.path.basename(chunk['repo'].rsplit(":", 1)[1])
             resources[chunk['repo']] = {
-                'name': name, 'type': 'git', 'check_every': '15m',
+                'name': name, 'type': 'git-mirror', 'check_every': '15m',
                 'source': {
-                    'uri': self.get_repo_url(chunk['repo']),
-                    'branch': chunk.get('unpetrify-ref', 'master')}}
+                    'uri': self.get_repo_url(chunk['repo'])}}
         return resources
 
     def get_strata_paths(self, strata_path):
