@@ -138,14 +138,11 @@ class SystemsParser():
     def get_strata_resources(self, all_strata):
         all_chunks = (c for stratum in all_strata
                       for c in stratum['chunks'])
-        resources = {}
-        for chunk in all_chunks:
-            name = os.path.basename(chunk['repo'].rsplit(":", 1)[1])
-            resources[chunk['repo']] = {
-                'name': name, 'type': 'git-mirror', 'check_every': '15m',
-                'source': {
-                    'uri': self.get_repo_url(chunk['repo'])}}
-        return resources
+        return {x['repo']: {'name': os.path.basename(x['repo'].rsplit(':',1)[1]),
+                            'type': 'git-mirror',
+                            'check_every': '15m',
+                            'source': {'uri': self.get_repo_url(x['repo'])}}
+                for x in all_chunks}
 
     def get_strata_paths(self, strata_path):
         yaml = self.load_yaml_from_file(strata_path)
