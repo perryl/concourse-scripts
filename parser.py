@@ -105,8 +105,8 @@ class SystemsParser():
                         'YBD_CACHE_PASSWORD': '{{ybd-cache-password}}'
                     }, 'run': {'path': 'sh', 'args': sh_args}}}
 
-    def create_get_dict(resource, additional_keyvals={}):
-        return dict({'get': resource, 'attempts': 2}, **additional_keyvals)
+    def create_get_dict(self, resource, **kwargs):
+        return dict({'get': resource, 'attempts': 2}, **kwargs)
 
     def get_job_from_strata(self, strata, morphology, arch, resources):
         repos = set(x['repo'] for x in strata['chunks'])
@@ -115,7 +115,7 @@ class SystemsParser():
                   for repo in repos]
         inputs.append({'name': 'definitions'})
         inputs.append({'name': 'ybd'})
-        definitions = self.create_get_dict("definitions", {'trigger': True})
+        definitions = self.create_get_dict("definitions", **{'trigger': True})
         ybd = self.create_get_dict("ybd")
         morph_dir = re.sub('/systems', '', os.path.dirname(morphology))
         build_depends = [self.load_yaml_from_file('%s/%s' % (
@@ -124,7 +124,7 @@ class SystemsParser():
         if build_depends:
             definitions.update({'passed': build_depends})
         aggregates = [self.create_get_dict(resources[repo]['name'],
-                          {'params': {'submodules': 'none'}})
+                          **{'params': {'submodules': 'none'}})
                       for repo in repos]
         aggregates.append(definitions)
         aggregates.append(ybd)
@@ -160,7 +160,7 @@ class SystemsParser():
     def get_system_job(self, system, arch):
         passed_list = [x['name'] for x in system['strata']]
         aggregates = [self.create_get_dict("definitions",
-                          {'trigger': True, 'passed': passed_list}),
+                          **{'trigger': True, 'passed': passed_list}),
                       self.create_get_dict("ybd")]
         inputs = [{'name': 'definitions'}, {'name': 'ybd'}]
         task = self.get_ybd_task(inputs, "definitions/systems/%s.morph %s" %
