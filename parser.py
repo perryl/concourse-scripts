@@ -106,7 +106,7 @@ class SystemsParser():
                     }, 'run': {'path': 'sh', 'args': sh_args}}}
 
     def create_get_dict(self, resource, **kwargs):
-        return dict({'get': resource, 'attempts': 2}, **kwargs)
+        return dict({'get': resource, 'attempts': 3}, **kwargs)
 
     def get_job_from_strata(self, strata, morphology, arch, resources):
         repos = set(x['repo'] for x in strata['chunks'])
