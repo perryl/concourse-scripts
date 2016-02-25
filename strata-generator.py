@@ -91,14 +91,21 @@ class StrataGenerator():
                            'branch': '16.08'}})
 
         jobs = []
-        inputs = self.create_get_dict("definitions")
-        inputs.update(self.create_get_dict("ybd"))
+        definitions_res = self.create_get_dict("definitions")
+        ybd_res = self.create_get_dict("ybd")
+        aggregates = []
+        aggregates.append(definitions_res)
+        aggregates.append(ybd_res)
         strata_task = self.get_ybd_task(args.strata, "x86_64")
-        # TODO: check how arch should be defined
+        strata_plan = aggregates + [strata_task]
+        system_task = self.get_ybd_task("systems/genivi-demo-platform-x86_64-generic.morph", "x86_64")
+        system_plan = aggregates + [system_task]
+        # TODO: check how arch and system name should be defined
         
         jobs.append({'name': args.strata, 'public': True,
-                     'plan': [{'aggregate': inputs}, strata_task]})
-        print jobs
+                     'plan': strata_plan})
+        jobs.append({'name': 'gdp-x86_64-generic', 'public': True,
+                     'plan': system_plan})
         system = {'jobs': jobs, 'resources': resources}
         with open("file_out.yaml", 'w') as f:
             stream = yaml.dump(system, default_flow_style=False)
