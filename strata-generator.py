@@ -44,7 +44,10 @@ class YamlLoadError(Error):
 class StrataGenerator():
 
     def create_get_dict(self, resource, additional_keyvals={}):
-        return dict({'get': resource, 'attempts': 2}, **additional_keyvals)
+        # TODO: For a demo, we will be using a vagrant box which does
+        # not support attempts. For production, switch this round
+        #return dict({'get': resource, 'attempts': 2}, **additional_keyvals)
+        return dict({'get': resource}, **additional_keyvals)
     
     def get_ybd_task(self, inputs, ybd_args):
         sh_args = ['-c', 'echo "kbas-url: $YBD_CACHE_SERVER" >> ybd/ybd.conf; '
@@ -60,7 +63,7 @@ class StrataGenerator():
 
     def get_test_task(self):
         test_aggregates = []
-        test_aggregates.append(self.make_aggregate_dependencies("systems/genivi-demo-platform-x86_64-generic.morph"))
+        test_aggregates.append(self.make_aggregate_dependencies("gdp-x86_64-generic"))
         
         sh_args = ['-c', 'echo "Testing is Not Yet Implemented"',
                    'exit 0']
@@ -77,8 +80,8 @@ class StrataGenerator():
         '''
 
         dependent_aggregates = self.create_get_dict("definitions",
-                                                     {'trigger': True,
-                                                      'passed': dependency})
+                                                    {'trigger': True,
+                                                     'passed': [dependency]})
         return dependent_aggregates
 
     def main(self):
@@ -87,19 +90,18 @@ class StrataGenerator():
         '''
         parser = argparse.ArgumentParser(
             description='Generate a pipeline for a strata and tests')
-        parser.add_argument('strata', type=str,
-                            help='The location of the strata in the \
-                                  definitions repo')
-        parser.add_argument('definitionsurl', type=str,
+        parser.add_argument('--strata', type=str,
+                            help='The strata name')
+        parser.add_argument('--definitionsurl', type=str,
                             help='The URL of the definitions under \
                                   test')
-        parser.add_argument('branch', type=str,
+        parser.add_argument('--branch', type=str,
                             help='The branch of definitions to be \
                                   tested', default='master')
-        parser.add_argument('tests', type=str,
+        parser.add_argument('--tests', type=str,
                             help='The URL of the tests to be run on \
                                   the built system', default=None)
-        parser.add_argument('test-branch', type=str,
+        parser.add_argument('--test-branch', type=str,
                             help='The branch of the tests to be run \
                                   on the built system',
                             default='master')
@@ -129,9 +131,11 @@ class StrataGenerator():
         system_aggregates.append(ybd_res)
 
         inputs = [{'name': 'definitions'}, {'name': 'ybd'}]
-        strata_task = self.get_ybd_task(inputs, "%s %s" % (args.strata, "x86_64"))
+        strata_task = self.get_ybd_task(inputs,
+                                        "definitions/strata/%s.morph \
+                                        %s" % (args.strata, "x86_64"))
         strata_plan = strata_aggregates + [strata_task]
-        system_task = self.get_ybd_task(inputs, "systems/genivi-demo-platform-x86_64-generic.morph %s" % ("x86_64"))
+        system_task = self.get_ybd_task(inputs, "definitions/systems/genivi-demo-platform-x86_64-generic.morph  %s" % ("x86_64"))
         system_plan = system_aggregates + [system_task]
         # TODO: check how arch and system name should be defined
         
