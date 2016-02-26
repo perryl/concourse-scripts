@@ -16,6 +16,7 @@
 #
 # =*= License: GPL-2 =*=
 
+
 import string
 import argparse
 import yaml
@@ -26,8 +27,11 @@ from collections import OrderedDict
 
 
 docker_image = "docker:///benbrown/sandboxlib#latest"
+
+
 class Error(Exception):
     pass
+
 
 class InvalidArgError(Error):
 
@@ -35,17 +39,20 @@ class InvalidArgError(Error):
         self.missing_arg = missing_arg
         Error.__init__(self, 'Script requires %s to run' % self.missing_arg)
 
+
 class InvalidFormatError(Error):
 
     def __init__(self, morph_file):
         self.morph_file = morph_file
         Error.__init__(self, 'Morphology is not a dict: %s' % self.morph_file)
 
+
 class YamlLoadError(Error):
 
     def __init__(self, morph_file):
         self.morph_file = morph_file
         Error.__init__(self, 'Could not load file: %s' % self.morph_file)
+
 
 class StrataGenerator():
 
@@ -142,10 +149,11 @@ class StrataGenerator():
 
         inputs = [{'name': 'definitions'}, {'name': 'ybd'}]
         strata_task = self.get_ybd_task(inputs,
-                                        "definitions/strata/%s.morph \
-                                        %s" % (args.strata, "x86_64"))
+                                        "definitions/strata/%s.morph %s" % (
+                                        args.strata, "x86_64"))
         strata_plan = strata_aggregates + [strata_task]
-        system_task = self.get_ybd_task(inputs, "definitions/systems/genivi-demo-platform-x86_64-generic.morph  %s" % ("x86_64"))
+        system_task = self.get_ybd_task(inputs, "definitions/systems/" \
+            "genivi-demo-platform-x86_64-generic.morph %s" % "x86_64")
         system_plan = system_aggregates + [system_task]
         # TODO: check how arch and system name should be defined
         
@@ -155,7 +163,7 @@ class StrataGenerator():
                      'plan': system_plan})
         if args.tests is not None:
             test_job = self.get_test_task()
-            jobs.append({'name': 'test', 'public':True,
+            jobs.append({'name': 'test', 'public': True,
                         'plan': test_job})
         
         system = {'jobs': jobs, 'resources': resources}
