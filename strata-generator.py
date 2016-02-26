@@ -29,38 +29,13 @@ from collections import OrderedDict
 docker_image = "docker:///benbrown/sandboxlib#latest"
 
 
-class Error(Exception):
-    pass
-
-
-class InvalidArgError(Error):
-
-    def __init__(self, missing_arg):
-        self.missing_arg = missing_arg
-        Error.__init__(self, 'Script requires %s to run' % self.missing_arg)
-
-
-class InvalidFormatError(Error):
-
-    def __init__(self, morph_file):
-        self.morph_file = morph_file
-        Error.__init__(self, 'Morphology is not a dict: %s' % self.morph_file)
-
-
-class YamlLoadError(Error):
-
-    def __init__(self, morph_file):
-        self.morph_file = morph_file
-        Error.__init__(self, 'Could not load file: %s' % self.morph_file)
-
-
 class StrataGenerator():
 
-    def create_get_dict(self, resource, additional_keyvals={}):
+    def create_get_dict(self, resource, **kwargs):
         # TODO: For a demo, we will be using a vagrant box which does
         # not support attempts. For production, switch this round
-        #return dict({'get': resource, 'attempts': 2}, **additional_keyvals)
-        return dict({'get': resource}, **additional_keyvals)
+        #return dict({'get': resource, 'attempts': 3}, **kwargs)
+        return dict({'get': resource}, **kwargs)
     
     def get_ybd_task(self, inputs, ybd_args):
         sh_args = ['-c', 'echo "kbas-url: $YBD_CACHE_SERVER" >> ybd/ybd.conf; '
@@ -76,7 +51,8 @@ class StrataGenerator():
 
     def get_test_task(self):
         test_aggregates = []
-        test_aggregates.append(self.make_aggregate_dependencies("gdp-x86_64-generic"))
+        test_aggregates.append(
+            self.make_aggregate_dependencies("gdp-x86_64-generic"))
         
         sh_args = ['-c', 'echo "Testing is Not Yet Implemented"',
                    'exit 0']
@@ -93,7 +69,7 @@ class StrataGenerator():
         '''
 
         dependent_aggregates = self.create_get_dict("definitions",
-                                                    {'trigger': True,
+                                                    **{'trigger': True,
                                                      'passed': [dependency]})
         return dependent_aggregates
 
@@ -103,31 +79,22 @@ class StrataGenerator():
         '''
         parser = argparse.ArgumentParser(
             description='Generate a pipeline for a strata and tests')
-        parser.add_argument('--strata', type=str,
+        parser.add_argument('--strata', type=str, required=True,
                             help='The strata name')
-        parser.add_argument('--definitionsurl', type=str,
-                            help='The URL of the definitions under \
-                                  test')
-        parser.add_argument('--branch', type=str,
-                            help='The branch of definitions to be \
-                                  tested', default='master')
-        parser.add_argument('--tests', type=str,
-                            help='The URL of the tests to be run on \
-                                  the built system', default=None)
-        parser.add_argument('--test-branch', type=str,
-                            help='The branch of the tests to be run \
-                                  on the built system',
-                            default='master')
+        parser.add_argument('--definitions-url', type=str, required=True,
+                            help='The URL of the definitions under test')
+        parser.add_argument('--branch', type=str, default='master',
+                            help='The branch of definitions to be tested')
+        parser.add_argument('--tests', type=str, default=None,
+            help='The URL of the tests to be run on the built system')
+        parser.add_argument('--test-branch', type=str, default='master',
+            help='The branch of the tests to be run on the built system')
         args = parser.parse_args()
-        if args.strata is None:
-            raise InvalidArgError('stratum')
-        if args.definitionsurl is None:
-            raise InvalidArgError('definitions url')
 
         resources = []
         resources.append({'name': 'definitions', 'type': 'git',
                           'check_every': '15m', 'source': {
-                              'uri': args.definitionsurl,
+                              'uri': args.definitions_url,
                               'branch': args.branch}})
         resources.append({'name': 'ybd', 'type': 'git', 'source':
                           {'uri': 'https://github.com/devcurmudgeon/ybd',
