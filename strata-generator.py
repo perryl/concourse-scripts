@@ -168,9 +168,11 @@ class StrataGenerator():
         
         system = {'jobs': jobs, 'resources': resources}
 
+        Dumper = yaml.SafeDumper
+        Dumper.ignore_aliases = lambda self, data: True
 
         with open("file_out.yaml", 'w') as f:
-            stream = yaml.dump(system, default_flow_style=False)
+            stream = yaml.dump(system, default_flow_style=False, Dumper=Dumper)
             f.write(stream.replace("'{{ybd-cache-password}}'",
                                    "{{ybd-cache-password}}")
                           .replace("'{{ybd-cache-server}}'",
