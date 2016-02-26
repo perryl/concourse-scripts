@@ -29,6 +29,12 @@ docker_image = "docker:///benbrown/sandboxlib#latest"
 class Error(Exception):
     pass
 
+class InvalidArgError(Error):
+
+    def __init__(self, missing_arg):
+        self.missing_arg = missing_arg
+        Error.__init__(self, 'Script requires %s to run' % self.missing_arg)
+
 class InvalidFormatError(Error):
 
     def __init__(self, morph_file):
@@ -106,6 +112,10 @@ class StrataGenerator():
                                   on the built system',
                             default='master')
         args = parser.parse_args()
+        if args.strata is None:
+            raise InvalidArgError('stratum')
+        if args.definitionsurl is None:
+            raise InvalidArgError('definitions url')
 
         resources = []
         resources.append({'name': 'definitions', 'type': 'git',
