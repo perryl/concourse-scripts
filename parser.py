@@ -26,6 +26,7 @@ from collections import OrderedDict
 
 
 docker_image = "docker:///benbrown/sandboxlib#latest"
+ybd_tag = "16.13"
 aliases = {
   'baserock:': 'git://git.baserock.org/baserock/',
   'freedesktop:': 'git://anongit.freedesktop.org/',
@@ -197,7 +198,7 @@ class SystemsParser():
                 'branch': 'master'}})
         resources.append({'name': 'ybd', 'type': 'git', 'source':
                           {'uri': 'https://github.com/devcurmudgeon/ybd',
-                           'branch': '16.08'}})
+                           'branch': ybd_tag}})
         jobs = [self.get_job_from_strata(
                     x, args.system, arch, resources_by_name)
                 for x in strata_yamls]
