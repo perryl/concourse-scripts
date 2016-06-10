@@ -204,8 +204,11 @@ class SystemsParser():
                 for x in strata_yamls]
         if yaml_stream['kind'] == "system":
             jobs.append(self.get_system_job(yaml_stream, arch))
+        resource_types = [{'name': 'git-mirror', 'type': 'docker-image',
+                           'source': {'repository': 'benbrown/git-mirror'}}]
 
-        system = {'jobs': jobs, 'resources': resources}
+        system = {'jobs': jobs, 'resources': resources,
+                  'resource_types': resource_types}
         path = '%s/%s' % (os.getcwd(), system_name)
         if not os.path.isdir(path):
             os.mkdir(path)
