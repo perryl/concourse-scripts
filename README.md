@@ -64,6 +64,23 @@ the pipeline on concourse, run the following command:
 - Congratulations! Your pipeline should now be visible [here](
 http://192.168.100.4:8080)
 
+## Cache server
+
+The construct-pipelines script is set up to create a pipeline using the
+default YBD cache server, artifacts1.baserock.org
+
+If you have set up your own custom cache server via YBD, you can use it by
+running the following:
+```
+    ./parser.py --system=<path/to/definitions/systems/your-system.morph>
+    fly set-pipeline -p <your-system.yml> -c <your-system> -l credentials.yml
+```
+Where credentials.yml contains the following information:
+```
+    ybd-cache-server: 'http://your-cache-server:8000/'
+    ybd-cache-password: your-password
+```
+
 ## Further features
 
 This pipeline currently only has the ability to create a single pipeline from a
